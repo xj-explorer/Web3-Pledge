@@ -4,7 +4,7 @@ pledge V2 contract
 ## 本地运行
 
 ```
-npm install
+npm install / npm install --legacy-peer-deps
 npx hardhat compile
 npx hardhat test
 npx hardhat ignition deploy ./ignition/modules/PledgePool.js

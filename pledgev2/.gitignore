@@ -1,2 +1,28 @@
 /node_modules
 pnpm-lock.yaml
+
+# 忽略构建生成的文件和目录
+artifacts
+cache
+
+# 忽略Hardhat相关的临时文件
+/ignition/deployments
+
+# 忽略IDE配置文件
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# 忽略操作系统文件
+.DS_Store
+Thumbs.db
+
+# 忽略日志和临时文件
+*.log
+tmp/
+temp/
+
