@@ -1,4 +1,22 @@
 #!/bin/sh
-. "$(dirname "$0")/_/husky.sh"
+# 指定使用 Bourne shell 作为脚本的解释器
 
+. "$(dirname "$0")/_/husky.sh"
+# 引入 husky 的辅助脚本，该脚本路径为当前脚本所在目录下的 _/husky.sh 文件
+
+# 切换到 pledge-fe 目录
+# 保存当前工作目录
+export CURRENT_DIR="$(pwd)"
+# 获取脚本所在目录
+export SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# 切换到脚本所在目录的上一级（即pledge-fe目录）
+cd "$SCRIPT_DIR/.."
+
+# 执行 yarn 的 lint-staged 命令，--allow-empty 参数允许在没有匹配文件时也正常执行，"$1" 用于传递第一个命令行参数
 yarn lint-staged --allow-empty "$1"
+
+# 切换回原来的目录
+cd "$CURRENT_DIR"
+
+# 添加错误处理，确保命令执行失败时返回正确的退出码
+exit $?

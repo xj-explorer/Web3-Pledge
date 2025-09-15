@@ -1,4 +1,15 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-npx --no-install commitlint --edit ""
+# 切换到 pledge-fe 目录
+export CURRENT_DIR="$(pwd)"
+export SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+cd "$SCRIPT_DIR/.."
+
+# 使用本地安装的commitlint，避免版本不匹配问题
+yarn run commitlint --edit "$1"
+
+# 切换回原来的目录
+cd "$CURRENT_DIR"
+
+exit $?

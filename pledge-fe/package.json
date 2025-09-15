@@ -4,14 +4,16 @@
   "description": "Pledge aims to be the crypto-asset lending platform for non-traders. ",
   "main": "index.js",
   "scripts": {
-    "dev": "export SET NODE_OPTIONS=--openssl-legacy-provider && cross-env NODE_ENV=development REACT_APP_CHAIN_ID='97' webpack serve  --config ./build/dev.js",
+    "dev": "export NODE_OPTIONS=--openssl-legacy-provider && cross-env NODE_ENV=development REACT_APP_CHAIN_ID='97' webpack serve  --config ./build/dev.js",
     "build": "export NODE_OPTIONS=--openssl-legacy-provider && cross-env NODE_ENV=production REACT_APP_CHAIN_ID='56' webpack --config ./build/pro.js",
+    "dev-win": "set NODE_OPTIONS=--openssl-legacy-provider && cross-env NODE_ENV=development REACT_APP_CHAIN_ID='97' webpack serve  --config ./build/dev.js",
+    "build-win": "set NODE_OPTIONS=--openssl-legacy-provider && cross-env NODE_ENV=production REACT_APP_CHAIN_ID='56' webpack --config ./build/pro.js",
     "lint": "yarn run lint-eslint && yarn run lint-stylelint",
     "lint-eslint": "eslint -c .eslintrc.js --ext .js {src,build}/**/*.js",
     "lint-stylelint": "stylelint --config .stylelintrc.json src/**/*.{less,scss} --syntax scss",
     "web3-token-abi": "node ./build/web3TokenAbi.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "prepare": "husky install"
+    "prepare": "cd .. && husky install pledge-fe\\.husky && cd pledge-fe"
   },
   "author": "",
   "license": "ISC",
