@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gomodule/redigo/redis"
 	"pledge-backend/config"
 	"pledge-backend/log"
 	"time"
+
+	"github.com/gomodule/redigo/redis"
 )
 
 // InitRedis 初始化Redis
@@ -16,10 +17,10 @@ func InitRedis() *redis.Pool {
 	redisConf := config.Config.Redis
 	// 建立连接池
 	RedisConn = &redis.Pool{
-		MaxIdle:     10,   // 最大的空闲连接数，表示即使没有redis连接时依然可以保持N个空闲的连接，而不被清除，随时处于待命状态。
-		MaxActive:   0,    // 最大的激活连接数，表示同时最多有N个连接   0 表示无穷大
-		Wait:        true, // 如果连接数不足则阻塞等待
-		IdleTimeout: 180 * time.Second,
+		MaxIdle:     10,                // 最大的空闲连接数，表示即使没有redis连接时依然可以保持N个空闲的连接，而不被清除，随时处于待命状态。
+		MaxActive:   0,                 // 最大的激活连接数，表示同时最多有N个连接   0 表示无穷大
+		Wait:        true,              // 如果连接数不足则阻塞等待
+		IdleTimeout: 180 * time.Second, // 空闲连接的超时时间，180秒后空闲连接将被关闭
 		Dial: func() (redis.Conn, error) {
 			c, err := redis.Dial("tcp", fmt.Sprintf("%s:%s", redisConf.Address, redisConf.Port))
 			if err != nil {
@@ -51,6 +52,7 @@ func RedisSet(key string, data interface{}, aliveSeconds int) error {
 	defer func() {
 		_ = conn.Close()
 	}()
+	// 将各种类型数据进行 JSON 序列化之后再保存至redis
 	value, err := json.Marshal(data)
 	if err != nil {
 		return err
@@ -90,6 +92,9 @@ func RedisGet(key string) ([]byte, error) {
 	defer func() {
 		_ = conn.Close()
 	}()
+	// redis.Bytes() 用于将 redis 命令执行结果转换为字节切片([]byte)类型。
+	// 此处调用 conn.Do("get", key) 执行 Redis 的 GET 命令获取指定 key 的值，
+	// 再使用 redis.Bytes() 将结果转换为字节切片赋值给 reply，同时获取可能出现的错误。
 	reply, err := redis.Bytes(conn.Do("get", key))
 	if err != nil {
 		return nil, err

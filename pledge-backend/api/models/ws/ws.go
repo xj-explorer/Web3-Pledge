@@ -3,12 +3,13 @@ package ws
 import (
 	"encoding/json"
 	"errors"
-	"github.com/gorilla/websocket"
 	"pledge-backend/api/models/kucoin"
 	"pledge-backend/config"
 	"pledge-backend/log"
 	"sync"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 const SuccessCode = 0
@@ -24,7 +25,9 @@ type Server struct {
 }
 
 type ServerManager struct {
-	Servers    sync.Map
+	// Servers 用于存储所有连接的 WebSocket 服务器实例，键为服务器 ID，值为 *Server 类型
+	// sync.Map 是 Go 语言标准库中提供的并发安全的映射类型，适用于多个 goroutine 并发读写的场景，无需额外加锁。
+	Servers    sync.Map // map[string]*Server
 	Broadcast  chan []byte
 	Register   chan *Server
 	Unregister chan *Server
@@ -120,8 +123,13 @@ func StartServer() {
 		select {
 		case price, ok := <-kucoin.PlgrPriceChan:
 			if ok {
+				// 使用 Range 方法遍历 Manager.Servers 中的所有连接
+				// Range 方法接受一个回调函数，该函数会对 Servers 中的每一个键值对执行一次
 				Manager.Servers.Range(func(key, value interface{}) bool {
+					// 将 value 转换为 *Server 类型，因为我们知道 Servers 中存储的是 *Server 实例
+					// 调用 SendToClient 方法，将最新的价格信息发送给客户端，状态码为 SuccessCode 表示成功
 					value.(*Server).SendToClient(price, SuccessCode)
+					// 返回 true 表示继续遍历下一个元素
 					return true
 				})
 			}

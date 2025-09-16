@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"github.com/gin-gonic/gin"
 	"pledge-backend/api/common/statecode"
 	"pledge-backend/api/models"
 	"pledge-backend/api/models/request"
@@ -12,12 +11,15 @@ import (
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/gin-gonic/gin"
 )
 
 type PoolController struct {
 }
 
 func (c *PoolController) PoolBaseInfo(ctx *gin.Context) {
+	// 实例化一个响应结构体
 	res := response.Gin{Res: ctx}
 	req := request.PoolBaseInfo{}
 	var result []models.PoolBaseInfoRes

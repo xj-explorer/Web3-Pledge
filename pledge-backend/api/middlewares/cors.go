@@ -1,8 +1,9 @@
 package middlewares
 
 import (
-	"github.com/gin-gonic/gin"
 	"net/http"
+
+	"github.com/gin-gonic/gin"
 )
 
 // Cors 跨域中间件
@@ -19,6 +20,7 @@ func Cors() gin.HandlerFunc {
 			c.Header("Access-Control-Allow-Credentials", "false")
 			c.Set("content-type", "application/json")
 		}
+		// 处理 OPTIONS 请求，通常用于跨域预检请求，直接返回 204 No Content 状态码并终止请求链
 		if method == "OPTIONS" {
 			c.AbortWithStatus(http.StatusNoContent)
 		}

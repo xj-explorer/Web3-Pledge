@@ -22,6 +22,7 @@ const (
 
 )
 
+// 配置国际化响应数据
 var Msg = map[int]map[int]string{
 
 	0: {

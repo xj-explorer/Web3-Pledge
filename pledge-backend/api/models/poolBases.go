@@ -80,9 +80,15 @@ func (p *PoolBases) PoolBaseInfo(chainId int, res *[]PoolBaseInfoRes) error {
 	}
 
 	for _, v := range poolBases {
+		// 初始化一个空的 BorrowTokenInfo 结构体，用于存储反序列化后的借币信息
 		borrowTokenInfo := BorrowTokenInfo{}
+		// 将数据库中存储的借币信息（JSON 字符串）反序列化为 BorrowTokenInfo 结构体
+		// 忽略可能的错误，若反序列化失败，borrowTokenInfo 将保持初始值
 		_ = json.Unmarshal([]byte(v.BorrowTokenInfo), &borrowTokenInfo)
+		// 初始化一个空的 LendTokenInfo 结构体，用于存储反序列化后的贷币信息
 		lendTokenInfo := LendTokenInfo{}
+		// 将数据库中存储的贷币信息（JSON 字符串）反序列化为 LendTokenInfo 结构体
+		// 忽略可能的错误，若反序列化失败，lendTokenInfo 将保持初始值
 		_ = json.Unmarshal([]byte(v.LendTokenInfo), &lendTokenInfo)
 		*res = append(*res, PoolBaseInfoRes{
 			Index: v.PoolID - 1,

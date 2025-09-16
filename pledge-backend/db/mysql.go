@@ -36,11 +36,17 @@ func InitMysql() {
 	if err != nil {
 		log.Logger.Panic(fmt.Sprintf("mysql connention error ==>  %+v", err))
 	}
+	// 注册创建操作回调，在创建操作完成后执行 After 函数
 	_ = db.Callback().Create().After("gorm:after_create").Register("after_create", After)
+	// 注册查询操作回调，在查询操作完成后执行 After 函数
 	_ = db.Callback().Query().After("gorm:after_query").Register("after_query", After)
+	// 注册删除操作回调，在删除操作完成后执行 After 函数
 	_ = db.Callback().Delete().After("gorm:after_delete").Register("after_delete", After)
+	// 注册更新操作回调，在更新操作完成后执行 After 函数
 	_ = db.Callback().Update().After("gorm:after_update").Register("after_update", After)
+	// 注册单行查询操作回调，在单行查询操作完成后执行 After 函数
 	_ = db.Callback().Row().After("gorm:row").Register("after_row", After)
+	// 注册原生 SQL 操作回调，在原生 SQL 操作完成后执行 After 函数
 	_ = db.Callback().Raw().After("gorm:raw").Register("after_raw", After)
 
 	//自动迁移为给定模型运行自动迁移，只会添加缺失的字段，不会删除/更改当前数据
