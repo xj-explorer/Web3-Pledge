@@ -2,61 +2,81 @@
 
 pragma solidity 0.6.12;
 
+// 导入OpenZeppelin的防重入攻击合约
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+// 导入自定义的安全转账库
 import "../library/SafeTransfer.sol";
+// 导入债务代币接口
 import "../interface/IDebtToken.sol";
+// 导入BSC质押预言机接口
 import "../interface/IBscPledgeOracle.sol";
+// 导入Uniswap V2路由接口
 import "../interface/IUniswapV2Router02.sol";
+// 导入多签客户端合约
 import "../multiSignature/multiSignatureClient.sol";
 
 
 
 contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
 
+    // 为 uint256 类型引入 SafeMath 库，防止数值溢出和下溢
     using SafeMath for uint256;
+    // 为 IERC20 类型引入 SafeERC20 库，确保 ERC20 代币操作的安全性
     using SafeERC20 for IERC20;
-    // default decimal
+    // 默认精度，用于计算时的单位转换，值为 10 的 18 次方
     uint256 constant internal calDecimal = 1e18;
-    // Based on the decimal of the commission and interest
+    // 基于手续费和利息的精度，值为 10 的 8 次方
     uint256 constant internal baseDecimal = 1e8;
+    // 最小操作金额，值为 100 * 10 的 18 次方
     uint256 public minAmount = 100e18;
-    // one years
+    // 一年的时间，用于时间相关的计算
     uint256 constant baseYear = 365 days;
 
-    enum PoolState{ MATCH, EXECUTION, FINISH, LIQUIDATION, UNDONE }
+    // 定义借贷池的状态枚举
+    enum PoolState{ 
+        MATCH,      // 匹配状态
+        EXECUTION,  // 执行状态
+        FINISH,     // 完成状态
+        LIQUIDATION,// 清算状态
+        UNDONE      // 未完成状态
+    }
+    // 默认的池状态，初始化为匹配状态
     PoolState constant defaultChoice = PoolState.MATCH;
 
+    // 全局暂停标志，用于控制合约是否暂停操作
     bool public globalPaused = false;
-    // pancake swap router
+    // PancakeSwap 交换路由器地址，用于代币交换操作
     address public swapRouter;
-    // receiving fee address
+    // 接收手续费的地址
     address payable public feeAddress;
-    // oracle address
+    // BSC 质押预言机地址，用于获取价格等数据
     IBscPledgeOracle public oracle;
-    // fee
+    // 出借手续费
     uint256 public lendFee;
+    // 借款手续费
     uint256 public borrowFee;
 
-        // 每个池的基本信息
+    // 每个池的基本信息
     struct PoolBaseInfo{
         uint256 settleTime;         // 结算时间
         uint256 endTime;            // 结束时间
         uint256 interestRate;       // 池的固定利率，单位是1e8 (1e8)
         uint256 maxSupply;          // 池的最大限额
-        uint256 lendSupply;         // 当前实际存款的借款
-        uint256 borrowSupply;       // 当前实际存款的借款
+        uint256 lendSupply;         // 当前实际存款的借出金额
+        uint256 borrowSupply;       // 当前实际存款的借入金额
         uint256 martgageRate;       // 池的抵押率，单位是1e8 (1e8)
-        address lendToken;          // 借款方代币地址 (比如 BUSD..)
+        address lendToken;          // 出借方代币地址 (比如 BUSD..)
         address borrowToken;        // 借款方代币地址 (比如 BTC..)
         PoolState state;            // 状态 'MATCH, EXECUTION, FINISH, LIQUIDATION, UNDONE'
-        IDebtToken spCoin;          // sp_token的erc20地址 (比如 spBUSD_1..)
-        IDebtToken jpCoin;          // jp_token的erc20地址 (比如 jpBTC_1..)
+        IDebtToken spCoin;          // sp_token 为出借债务代币，用于记录出借人的债权，当出借人完成存款后可领取该代币，后续可用于取回本金和利息 (比如 spBUSD_1..)
+        IDebtToken jpCoin;          // jp_token 为借款债务代币，用于记录借款人的债务，借款人质押资产借款时涉及该代币的相关操作 (比如 jpBTC_1..)
         uint256 autoLiquidateThreshold; // 自动清算阈值 (触发清算阈值)
     }
-    // total base pool.
+
+    // 所有的池子基本信息
     PoolBaseInfo[] public poolBaseInfo;
 
-       // 每个池的数据信息
+    // 每个池的数据信息
     struct PoolDataInfo{
         uint256 settleAmountLend;       // 结算时的实际出借金额
         uint256 settleAmountBorrow;     // 结算时的实际借款金额
@@ -65,54 +85,60 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         uint256 liquidationAmounLend;   // 清算时的实际出借金额
         uint256 liquidationAmounBorrow; // 清算时的实际借款金额
     }
-    // total data pool
+    // 所有的池子数据信息
     PoolDataInfo[] public poolDataInfo;
 
-       // 借款用户信息
+    // 借款用户信息
     struct BorrowInfo {
         uint256 stakeAmount;           // 当前借款的质押金额
         uint256 refundAmount;          // 多余的退款金额
         bool hasNoRefund;              // 默认为false，false = 未退款，true = 已退款
         bool hasNoClaim;               // 默认为false，false = 未认领，true = 已认领
     }
-    // Info of each user that stakes tokens.  {user.address : {pool.index : user.borrowInfo}}
+    // 每个用户在不同索引池子的借款信息 {user.address : {pool.index : user.borrowInfo}}
     mapping (address => mapping (uint256 => BorrowInfo)) public userBorrowInfo;
 
-      // 借款用户信息
+    // 出借用户信息
     struct LendInfo {
         uint256 stakeAmount;          // 当前借款的质押金额
         uint256 refundAmount;         // 超额退款金额
         bool hasNoRefund;             // 默认为false，false = 无退款，true = 已退款
         bool hasNoClaim;              // 默认为false，false = 无索赔，true = 已索赔
     }
-
-    // Info of each user that stakes tokens.  {user.address : {pool.index : user.lendInfo}}
+    // 每个用户在不同索引池子的出借信息 {user.address : {pool.index : user.lendInfo}}
     mapping (address => mapping (uint256 => LendInfo)) public userLendInfo;
 
-        // 事件
-        // 存款借出事件，from是借出者地址，token是借出的代币地址，amount是借出的数量，mintAmount是生成的数量
-    event DepositLend(address indexed from,address indexed token,uint256 amount,uint256 mintAmount); 
+    // 事件
+    // 存款借出事件，from是借出者地址，token是借出的代币地址，amount是借出的数量，mintAmount是根据出借数量实际生成的债务代币数量（sp_token）
+    event DepositLend(address indexed from,address indexed token,uint256 amount,uint256 mintAmount);
     // 借出退款事件，from是退款者地址，token是退款的代币地址，refund是退款的数量
+    // 退款操作是退还过量存款，此时债务代币尚未铸造，因此无需销毁债务代币
     event RefundLend(address indexed from, address indexed token, uint256 refund); 
     // 借出索赔事件，from是索赔者地址，token是索赔的代币地址，amount是索赔的数量
+    // 索赔操作是领取债务代币，是铸造代币的过程，并非销毁代币的过程
     event ClaimLend(address indexed from, address indexed token, uint256 amount); 
-     // 提取借出事件，from是提取者地址，token是提取的代币地址，amount是提取的数量，burnAmount是销毁的数量
+    // 提取借出事件，from是提取者地址，token是提取的代币地址，amount是提取的数量，burnAmount是在提取操作中需要销毁的债务代币（sp_token）的数量
+    // 提取操作是取回本金和利息，需要销毁对应的债务代币以保证债权的一致性和防止重复提取
     event WithdrawLend(address indexed from,address indexed token,uint256 amount,uint256 burnAmount);
-    // 存款借入事件，from是借入者地址，token是借入的代币地址，amount是借入的数量，mintAmount是生成的数量
+    // 存款借入事件，from是借入者地址，token是借入的代币地址，amount是借入的数量，mintAmount是根据借入数量实际生成的债务代币数量（jp_token）
     event DepositBorrow(address indexed from,address indexed token,uint256 amount,uint256 mintAmount); 
-     // 借入退款事件，from是退款者地址，token是退款的代币地址，refund是退款的数量
+    // 借入退款事件，from是退款者地址，token是退款的代币地址，refund是退款的数量
+    // 退款操作是退还过量借入，此时债务代币尚未铸造，因此无需销毁债务代币
     event RefundBorrow(address indexed from, address indexed token, uint256 refund);
     // 借入索赔事件，from是索赔者地址，token是索赔的代币地址，amount是索赔的数量
+    // 索赔操作是领取债务代币，是铸造代币的过程，并非销毁代币的过程
     event ClaimBorrow(address indexed from, address indexed token, uint256 amount); 
-    // 提取借入事件，from是提取者地址，token是提取的代币地址，amount是提取的数量，burnAmount是销毁的数量
+    // 提取借入事件，from是提取者地址，token是提取的代币地址，amount是提取的数量，burnAmount是在提取操作中需要销毁的债务代币（jp_token）的数量
+    // 提取操作是取回本金和利息，需要销毁对应的债务代币以保证债权的一致性和防止重复提取
     event WithdrawBorrow(address indexed from,address indexed token,uint256 amount,uint256 burnAmount); 
+
     // 交换事件，fromCoin是交换前的币种地址，toCoin是交换后的币种地址，fromValue是交换前的数量，toValue是交换后的数量
     event Swap(address indexed fromCoin,address indexed toCoin,uint256 fromValue,uint256 toValue); 
     // 紧急借入提取事件，from是提取者地址，token是提取的代币地址，amount是提取的数量
     event EmergencyBorrowWithdrawal(address indexed from, address indexed token, uint256 amount); 
      // 紧急借出提取事件，from是提取者地址，token是提取的代币地址，amount是提取的数量
     event EmergencyLendWithdrawal(address indexed from, address indexed token, uint256 amount);
-    // 状态改变事件，pid是项目id，beforeState是改变前的状态，afterState是改变后的状态
+    // 状态改变事件，pid是池子id，beforeState是改变前的状态，afterState是改变后的状态
     event StateChange(uint256 indexed pid, uint256 indexed beforeState, uint256 indexed afterState); 
      // 设置费用事件，newLendFee是新的借出费用，newBorrowFee是新的借入费用
     event SetFee(uint256 indexed newLendFee, uint256 indexed newBorrowFee);
@@ -120,8 +146,8 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     event SetSwapRouterAddress(address indexed oldSwapAddress, address indexed newSwapAddress); 
      // 设置费用地址事件，oldFeeAddress是旧的费用地址，newFeeAddress是新的费用地址
     event SetFeeAddress(address indexed oldFeeAddress, address indexed newFeeAddress);
-    // 设置最小数量事件，oldMinAmount是旧的最小数量，newMinAmount是新的最小数量
-    event SetMinAmount(uint256 indexed oldMinAmount, uint256 indexed newMinAmount); 
+    // 设置最小操作金额事件，oldMinAmount是旧的最小操作金额，newMinAmount是新的最小操作金额。该最小操作金额用于限制存入借出资金和存入借入资金操作的最小数量。
+    event SetMinAmount(uint256 indexed oldMinAmount, uint256 indexed newMinAmount);
 
     constructor(
         address _oracle,

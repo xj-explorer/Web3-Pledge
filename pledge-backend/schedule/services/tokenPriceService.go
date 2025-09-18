@@ -65,6 +65,7 @@ func (s *TokenPrice) UpdateContractPrice() {
 			}
 		}
 
+		// 检查价格是否有发生更新
 		hasNewData, err := s.CheckPriceData(t.Token, t.ChainId, utils.Int64ToString(price))
 		if err != nil {
 			log.Logger.Sugar().Error("UpdateContractPrice CheckPriceData err ", err)

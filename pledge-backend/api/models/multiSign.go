@@ -3,9 +3,10 @@ package models
 import (
 	"encoding/json"
 	"errors"
-	"gorm.io/gorm"
 	"pledge-backend/api/models/request"
 	"pledge-backend/db"
+
+	"gorm.io/gorm"
 )
 
 // MultiSign multi-sign signature
@@ -35,6 +36,9 @@ func (m *MultiSign) Set(multiSign *request.SetMultiSign) error {
 	if err != nil {
 		return errors.New("record select err " + err.Error())
 	}
+	// 执行 SQL 插入操作，向 multi_sign 表中插入一条新记录。
+	// 使用 Where 条件 "id=?" 看似不合理，因为 Create 方法是用于插入新记录，通常不需要 Where 条件。
+	// 这里将数据结构体 &MultiSign 中的数据插入到 multi_sign 表中。
 	err = db.Mysql.Table("multi_sign").Where("id=?", m.Id).Create(&MultiSign{
 		ChainId:          multiSign.ChainId,
 		SpName:           multiSign.SpName,

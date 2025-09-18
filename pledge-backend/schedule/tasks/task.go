@@ -14,7 +14,7 @@ func Task() {
 	// get environment variables
 	common.GetEnv()
 
-	// flush redis db
+	// flush redis db 刷新 Redis 数据库
 	err := db.RedisFlushDB()
 	if err != nil {
 		panic("clear redis error " + err.Error())
@@ -30,7 +30,9 @@ func Task() {
 	services.NewTokenPrice().SavePlgrPriceTestNet()
 
 	//run pool task
+	// 创建一个新的任务调度器
 	s := gocron.NewScheduler()
+	// 设置调度器的时区为 UTC
 	s.ChangeLoc(time.UTC)
 	_ = s.Every(2).Minutes().From(gocron.NextTick()).Do(services.NewPool().UpdateAllPoolInfo)
 	_ = s.Every(1).Minute().From(gocron.NextTick()).Do(services.NewTokenPrice().UpdateContractPrice)

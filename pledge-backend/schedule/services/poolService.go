@@ -29,6 +29,7 @@ func (s *poolService) UpdateAllPoolInfo() {
 
 }
 
+// 将链上合约的池子基本信息和详情信息更新到数据库中
 func (s *poolService) UpdatePoolInfo(contractAddress, network, chainId string) {
 
 	log.Logger.Sugar().Info("UpdatePoolInfo ", contractAddress+" "+network)
