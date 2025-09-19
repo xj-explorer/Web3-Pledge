@@ -60,17 +60,17 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     struct PoolBaseInfo{
         uint256 settleTime;         // 结算时间
         uint256 endTime;            // 结束时间
-        uint256 interestRate;       // 池的固定利率，单位是1e8 (1e8)
+        uint256 interestRate;       // 池的固定利率，单位是1e8 (1e8 表示 10 的 8 次方，用于表示百分比精度，例如 1e8 代表 100%)
         uint256 maxSupply;          // 池的最大限额
         uint256 lendSupply;         // 当前实际存款的借出金额
         uint256 borrowSupply;       // 当前实际存款的借入金额
-        uint256 martgageRate;       // 池的抵押率，单位是1e8 (1e8)
+        uint256 martgageRate;       // 池的抵押率，单位是1e8 (1e8)，表示借款人需要质押的资产金额与借款金额的比例，用于衡量借款的风险程度，例如值为 150e8 代表抵押率为 150%
         address lendToken;          // 出借方代币地址 (比如 BUSD..)
         address borrowToken;        // 借款方代币地址 (比如 BTC..)
         PoolState state;            // 状态 'MATCH, EXECUTION, FINISH, LIQUIDATION, UNDONE'
         IDebtToken spCoin;          // sp_token 为出借债务代币，用于记录出借人的债权，当出借人完成存款后可领取该代币，后续可用于取回本金和利息 (比如 spBUSD_1..)
         IDebtToken jpCoin;          // jp_token 为借款债务代币，用于记录借款人的债务，借款人质押资产借款时涉及该代币的相关操作 (比如 jpBTC_1..)
-        uint256 autoLiquidateThreshold; // 自动清算阈值 (触发清算阈值)
+        uint256 autoLiquidateThreshold; // 自动清算阈值，当借款人的抵押资产价值与借款金额的比例低于该阈值时，意味着借款人抵押资产可能不足以覆盖借款金额，存在违约风险，为保障出借人的资金安全，将触发自动清算流程，单位是1e8 。
     }
 
     // 所有的池子基本信息
@@ -90,7 +90,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
 
     // 借款用户信息
     struct BorrowInfo {
-        uint256 stakeAmount;           // 当前借款的质押金额
+        uint256 stakeAmount;           // 当前借款的所有质押金额
         uint256 refundAmount;          // 多余的退款金额
         bool hasNoRefund;              // 默认为false，false = 未退款，true = 已退款
         bool hasNoClaim;               // 默认为false，false = 未认领，true = 已认领
@@ -100,7 +100,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
 
     // 出借用户信息
     struct LendInfo {
-        uint256 stakeAmount;          // 当前借款的质押金额
+        uint256 stakeAmount;          // 当前借款的所有质押金额
         uint256 refundAmount;         // 超额退款金额
         bool hasNoRefund;             // 默认为false，false = 无退款，true = 已退款
         bool hasNoClaim;              // 默认为false，false = 无索赔，true = 已索赔
@@ -227,7 +227,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         // 需要_spToken不是零地址
         require(_spToken != address(0), "createPool:is zero address");
 
-        // 推入基础池信息
+        // push进基础池信息
         poolBaseInfo.push(PoolBaseInfo({
             settleTime: _settleTime,
             endTime: _endTime,
@@ -303,8 +303,12 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         require(pool.lendSupply.sub(data.settleAmountLend) > 0, "refundLend: not refund"); // 需要池中还有未退还的金额
         require(!lendInfo.hasNoRefund, "refundLend: repeat refund"); // 需要用户没有重复退款
         // 用户份额 = 当前质押金额 / 总金额
+        // stakeAmount 是用户实际质押的金额，代表用户在该池中投入的资金数量
+        // pool.lendSupply 是当前池中的总借出供应量，为所有用户质押金额的总和
         uint256 userShare = lendInfo.stakeAmount.mul(calDecimal).div(pool.lendSupply);
         // refundAmount = 总退款金额 * 用户份额
+        // data.settleAmountLend 是结算时的实际出借金额，是经过匹配和计算后确定的有效出借量
+        // pool.lendSupply.sub(data.settleAmountLend) 得到的是总退款金额，即总借出供应量中未被有效使用的部分
         uint256 refundAmount = (pool.lendSupply.sub(data.settleAmountLend)).mul(userShare).div(calDecimal);
         // 退款操作
         _redeem(msg.sender,pool.lendToken,refundAmount);
@@ -533,10 +537,11 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     }
 
     /**
-     * @dev Can it be settle
-     * @param _pid is pool index
+     * @dev 检查是否可以进行结算操作
+     * @param _pid 是池子的索引
      */
     function checkoutSettle(uint256 _pid) public view returns(bool){
+        // 检查当前时间是否超过池子的结算时间，若超过则返回true，表示可以结算
         return block.timestamp > poolBaseInfo[_pid].settleTime;
     }
 
@@ -554,11 +559,20 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         // 池子的状态必须是匹配状态
         require(pool.state == PoolState.MATCH, "settle: 池子状态必须是匹配");
         if (pool.lendSupply > 0 && pool.borrowSupply > 0) {
-            // 获取标的物价格
+            // 获取标的物价格，返回 [lendTokenPrice,borrowTokenPrice]
             uint256[2]memory prices = getUnderlyingPriceView(_pid);
             // 总保证金价值 = 保证金数量 * 保证金价格
+            // 计算借款总价值，将借款数量转换为借出代币的价值
+            // prices[0] 为借出代币的价格（USD/借出代币），prices[1] 为借款代币的价格（USD/借款代币）
+            // prices[1].mul(calDecimal).div(prices[0]) 计算出借款代币相对于借出代币的兑换比率
+            // pool.borrowSupply 为当前池中的借款总量
+            // 先将借款总量乘以兑换比率，再除以 calDecimal（用于消除之前计算时乘以的精度）
+            // 最终得到以借出代币计价的借款总价值
             uint256 totalValue = pool.borrowSupply.mul(prices[1].mul(calDecimal).div(prices[0])).div(calDecimal);
             // 转换为稳定币价值
+            // 计算实际可匹配的金额。totalValue 表示某个总价值，baseDecimal 是基于手续费和利息的精度（值为 1e8），
+            // pool.martgageRate 是池的抵押率（单位是 1e8）。此计算通过将总价值乘以精度后再除以抵押率，
+            // 得出在当前抵押率下实际可匹配的金额，用于后续判断借贷池的匹配情况。
             uint256 actualValue = totalValue.mul(baseDecimal).div(pool.martgageRate);
             if (pool.lendSupply > actualValue){
                 // 总借款大于总借出
@@ -567,7 +581,14 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
             } else {
                 // 总借款小于总借出
                 data.settleAmountLend = pool.lendSupply;
+                // 计算结算时的实际借款金额。具体计算逻辑如下： actualValue的逆运算
                 data.settleAmountBorrow = pool.lendSupply.mul(pool.martgageRate).div(prices[1].mul(baseDecimal).div(prices[0]));
+                // data.settleAmountBorrow = pool.lendSupply.mul(pool.martgageRate).div(baseDecimal).div(prices[1].div(prices[0]));
+                // 以上两行计算结果一致，第二个为化简后的计算式，逻辑更清晰。
+                // 推导过程：
+                // 原式1: pool.lendSupply * pool.martgageRate / (prices[1] * baseDecimal / prices[0])
+                // 原式2: pool.lendSupply * pool.martgageRate / baseDecimal / (prices[1] / prices[0])
+                // 根据除法运算规则，两者计算结果一致，选择第二个式子，逻辑更清晰
             }
             // 更新池子状态
             pool.state = PoolState.EXECUTION;
@@ -584,10 +605,11 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     }
 
     /**
-     * @dev Can it be finish
-     * @param _pid is pool index
+     * @dev 检查借贷池是否可以进入完成状态
+     * @param _pid 是池子的索引
      */
     function checkoutFinish(uint256 _pid) public view returns(bool){
+        // 检查当前时间是否超过池子的结束时间，若超过则返回true，表示可以完成
         return block.timestamp > poolBaseInfo[_pid].endTime;
     }
 
@@ -608,22 +630,30 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         // 获取借款和贷款的token
         (address token0, address token1) = (pool.borrowToken, pool.lendToken);
 
-        // 计算时间比率 = ((结束时间 - 结算时间) * 基础小数)/365天
+        // 计算时间比率，结束时间 - 结算时间的结果为开始计息的时间，计算公式为 ((结束时间 - 结算时间) * 基础小数)/365天
         uint256 timeRatio = ((pool.endTime.sub(pool.settleTime)).mul(baseDecimal)).div(baseYear);
 
         // 计算利息 = 时间比率 * 利率 * 结算贷款金额
+        // 计算利息，公式为：利息 = 时间比率 * 利率 * 结算贷款金额 / 1e16
+        // 其中，timeRatio 是时间比率，代表借款时间占一年的比例，乘以 baseDecimal(1e8) 进行精度调整
+        // pool.interestRate 是池的固定利率，单位是 1e8
+        // data.settleAmountLend 是结算时的实际出借金额
+        // 除以 1e16 是为了抵消前面乘法中因精度调整带来的放大效果（baseDecimal的1e8+利率单位1e8），保证最终结果的准确性
         uint256 interest = timeRatio.mul(pool.interestRate.mul(data.settleAmountLend)).div(1e16);
 
         // 计算贷款金额 = 结算贷款金额 + 利息
         uint256 lendAmount = data.settleAmountLend.add(interest);
 
-        // 计算销售金额 = 贷款金额*(1+贷款费)
+        // 计算销售金额 = 贷款金额*(1+贷款费)，即swap交换时指定的预估卖出输出金额
         uint256 sellAmount = lendAmount.mul(lendFee.add(baseDecimal)).div(baseDecimal);
 
-        // 执行交换操作
+        // 执行交换操作，返回的是实际交换的输入(卖出)金额和实际输出(交换得到)金额
         (uint256 amountSell,uint256 amountIn) = _sellExactAmount(swapRouter,token0,token1,sellAmount);
 
         // 验证交换后的金额是否大于等于贷款金额
+        // 检查交换后获得的金额是否大于等于贷款金额（包含本金+利息和贷款费用）。
+        // 如果 amountIn 小于 lendAmount，说明滑点过高，交换损失过大，交易将被拒绝。
+        // 这是为了保护合约和用户的利益，防止因滑点导致的资金损失。
         require(amountIn >= lendAmount, "finish: Slippage is too high");
 
         // 如果交换后的金额大于贷款金额，计算费用并赎回
@@ -638,6 +668,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
 
         // 计算剩余的借款金额并赎回借款费
         uint256 remianNowAmount = data.settleAmountBorrow.sub(amountSell);
+        // 剩余借款金额剔除借款手续费，将手续费转移至指定接受手续费的合约地址
         uint256 remianBorrowAmount = redeemFees(borrowFee,pool.borrowToken,remianNowAmount);
         data.finishAmountBorrow = remianBorrowAmount;
 
@@ -650,7 +681,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
 
 
       /**
-     * @dev 检查清算条件,它首先获取了池子的基础信息和数据信息，然后计算了保证金的当前价值和清算阈值，最后比较了这两个值，如果保证金的当前价值小于清算阈值，那么就满足清算条件，函数返回true，否则返回false。
+     * @dev 检查清算条件,它首先获取了池子的基础信息和数据信息，然后计算了抵押金的当前价值和清算阈值，最后比较了这两个值，如果保证金的当前价值小于清算阈值，那么就满足清算条件，函数返回true，否则返回false。
      * @param _pid 是池子的索引
      */
     function checkoutLiquidate(uint256 _pid) external view returns(bool) {
@@ -661,6 +692,9 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         // 保证金当前价值 = 保证金数量 * 保证金价格
         uint256 borrowValueNow = data.settleAmountBorrow.mul(prices[1].mul(calDecimal).div(prices[0])).div(calDecimal);
         // 清算阈值 = settleAmountLend*(1+autoLiquidateThreshold)
+        // 计算清算价值阈值。首先将基础精度值（baseDecimal）与自动清算阈值（pool.autoLiquidateThreshold）相加，
+        // 得到一个包含清算阈值比例的系数。然后将该系数与结算时的实际出借金额（data.settleAmountLend）相乘，
+        // 最后除以基础精度值（baseDecimal），以还原数值精度，得到最终的清算价值阈值。
         uint256 valueThreshold = data.settleAmountLend.mul(baseDecimal.add(pool.autoLiquidateThreshold)).div(baseDecimal);
         return borrowValueNow < valueThreshold; // 如果保证金当前价值小于清算阈值，则返回true，否则返回false
     }
@@ -739,6 +773,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     function _getAmountIn(address _swapRouter,address token0,address token1,uint256 amountOut) internal view returns (uint256){
         IUniswapV2Router02 IUniswap = IUniswapV2Router02(_swapRouter);
         address[] memory path = _getSwapPath(swapRouter,token0,token1);
+        // 根据指定输出金额获取输入金额
         uint[] memory amounts = IUniswap.getAmountsIn(amountOut, path);
         return amounts[0];
     }
@@ -752,34 +787,53 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
     }
 
     /**
-      * @dev Swap
+      * @dev 执行代币交换操作
+      * @param _swapRouter 交换路由器地址，例如PancakeSwap或BabySwap等
+      * @param token0 用于交换的输入代币地址，若为 address(0) 则表示原生代币ETH
+      * @param token1 交换后要获取的输出代币地址，若为 address(0) 则表示原生代币ETH
+      * @param amount0 输入代币的数量
+      * @return uint256 交换后获得的输出代币数量
       */
     function _swap(address _swapRouter,address token0,address token1,uint256 amount0) internal returns (uint256) {
+        // 若输入代币不是ETH，则对交换路由器进行最大额度授权
         if (token0 != address(0)){
             _safeApprove(token0, address(_swapRouter), uint256(-1));
         }
+        // 若输出代币不是ETH，则对交换路由器进行最大额度授权
         if (token1 != address(0)){
             _safeApprove(token1, address(_swapRouter), uint256(-1));
         }
+        // 将交换路由器地址转换为IUniswapV2Router02接口类型
         IUniswapV2Router02 IUniswap = IUniswapV2Router02(_swapRouter);
+        // 获取代币交换路径
         address[] memory path = _getSwapPath(_swapRouter,token0,token1);
         uint256[] memory amounts;
+        // 若输入代币为ETH，则执行ETH兑换代币的操作
         if(token0 == address(0)){
             amounts = IUniswap.swapExactETHForTokens{value:amount0}(0, path,address(this), now+30);
+        // 若输出代币为ETH，则执行代币兑换ETH的操作
         }else if(token1 == address(0)){
             amounts = IUniswap.swapExactTokensForETH(amount0,0, path, address(this), now+30);
+        // 若输入输出均为代币，则执行代币兑换代币的操作
         }else{
             amounts = IUniswap.swapExactTokensForTokens(amount0,0, path, address(this), now+30);
         }
+        // 触发交换事件，记录交换前后的代币地址和数量
         emit Swap(token0,token1,amounts[0],amounts[amounts.length-1]);
+        // 返回交换后获得的输出代币数量
         return amounts[amounts.length-1];
     }
 
     /**
-     * @dev Approve
+     * @dev 安全地对指定代币进行授权操作
+     * @param token 要授权的代币合约地址
+     * @param to 被授权的地址
+     * @param value 授权的数量
      */
     function _safeApprove(address token, address to, uint256 value) internal {
+        // 调用代币合约的 approve 方法，0x095ea7b3 是 approve 方法的选择器
         (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0x095ea7b3, to, value));
+        // 检查调用是否成功，并且返回数据为空或解码后为 true
         require(success && (data.length == 0 || abi.decode(data, (bool))), "!safeApprove");
     }
 
@@ -796,7 +850,7 @@ contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
         assets[1] = uint256(pool.borrowToken);
         // 从预言机获取资产的价格
         uint256[]memory prices = oracle.getPrices(assets);
-        // 返回价格数组
+        // 返回价格数组 [lendTokenPrice,borrowTokenPrice]
         return [prices[0],prices[1]];
     }
 
