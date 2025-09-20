@@ -1,5 +1,6 @@
 require("@nomicfoundation/hardhat-ignition");
 require("@nomiclabs/hardhat-ethers");
+require("@nomiclabs/hardhat-waffle"); // 添加waffle支持
 require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */
