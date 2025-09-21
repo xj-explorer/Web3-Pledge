@@ -1,25 +1,24 @@
 
-const BN = web3.utils.BN;
+// 使用 ethers.BigNumber 替代 web3.utils.BN
+
 async function latestBlock () {
-  const block = await web3.eth.getBlock('latest');
-  return new BN(block.number);
+  const block = await ethers.provider.getBlock('latest');
+  return ethers.BigNumber.from(block.number);
 }
 
 async function latestBlockNum () {
-  const block = await web3.eth.getBlock('latest');
-  return (new BN(block.number)).toNumber();
+  const block = await ethers.provider.getBlock('latest');
+  return block.number;
 }
 
-
-async function showBlock () {
-    const block = await web3.eth.getBlock('latest');
-    console.log("Block number: " + new BN(block.number).toString());
-  }
-
 async function showBlock (msg) {
-    const block = await web3.eth.getBlock('latest');
-    console.log(msg + " at block number: " + new BN(block.number).toString());
-  }
+    const block = await ethers.provider.getBlock('latest');
+    if (msg) {
+        console.log(msg + " at block number: " + block.number.toString());
+    } else {
+        console.log("Block number: " + block.number.toString());
+    }
+}
 
 async function stopAutoMine() {
     //stop auto mine or it will mess the block number
@@ -37,8 +36,8 @@ function advanceBlock () {
 async function advanceBlockTo (target) {
     // stop interval mint,set to 600s
   await stopAutoMine()
-  if (!BN.isBN(target)) {
-    target = new BN(target);
+  if (!ethers.BigNumber.isBigNumber(target)) {
+    target = ethers.BigNumber.from(target);
   }
 
   const currentBlock = (await latestBlock());
@@ -59,9 +58,9 @@ ${colors.white.bgBlack('@openzeppelin/test-helpers')} ${colors.black.bgYellow('W
 
 // Returns the time of the last mined block in seconds
 async function latest () {
-    const block = await web3.eth.getBlock('latest');
-    return new BN(block.timestamp);
-  }
+    const block = await ethers.provider.getBlock('latest');
+    return ethers.BigNumber.from(block.timestamp);
+}
 
 async function increase(seconds) {
   await network.provider.send("evm_increaseTime", [seconds])

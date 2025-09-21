@@ -1,4 +1,4 @@
-const BN = web3.utils.BN;
+// 使用 ethers.BigNumber 替代 web3.utils.BN
 const zeroAddress = "0x0000000000000000000000000000000000000000"
 
 async function initFactory(minter) {

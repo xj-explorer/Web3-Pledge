@@ -1,5 +1,5 @@
 const { ethers } = require("hardhat");
-const BN = web3.utils.BN;
+// 移除 web3 引用，测试中未实际使用 BN
 
 async function mockUniswap (minter, weth) {
     const UniswapV2Factory = await ethers.getContractFactory("UniswapV2Factory");
