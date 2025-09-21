@@ -1,6 +1,7 @@
 require("@nomicfoundation/hardhat-ignition");
 require("@nomiclabs/hardhat-ethers");
 require("@nomiclabs/hardhat-waffle"); // 添加waffle支持
+require("solidity-coverage"); // 添加覆盖率测试支持
 require("dotenv").config();
 
 /** @type import('hardhat/config').HardhatUserConfig */

@@ -36,7 +36,7 @@
     "hardhat-abi-exporter": "^2.3.1",
     "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
-    "solidity-coverage": "^0.7.16"
+    "solidity-coverage": "^0.8.12"
   },
   "dependencies": {
     "@nomiclabs/hardhat-truffle5": "^2.0.2",

@@ -1,0 +1,617 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for multiSignature\multiSignature.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">multiSignature/</a> multiSignature.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>0/39</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>0/34</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>0/14</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">0% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>0/46</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
+&nbsp;
+pragma solidity 0.6.12;
+&nbsp;
+// 导入多签客户端合约
+import "./multiSignatureClient.sol";
+&nbsp;
+// 白名单地址操作库
+library whiteListAddress{
+    // 添加地址到白名单
+<span class="fstat-no" title="function not covered" >    function addWhiteListAddress(address[] storage whiteList,address temp) internal{</span>
+<span class="cstat-no" title="statement not covered" >        if (!isEligibleAddress(whiteList,temp)){</span>
+<span class="cstat-no" title="statement not covered" >            whiteList.push(temp)</span>;
+        }
+    }
+    // 从白名单移除地址
+<span class="fstat-no" title="function not covered" >    function removeWhiteListAddress(address[] storage whiteList,address temp)internal returns (bool) {</span>
+<span class="cstat-no" title="statement not covered" >        uint256 len = whiteList.length;</span>
+<span class="cstat-no" title="statement not covered" >        uint256 i=0;</span>
+<span class="cstat-no" title="statement not covered" >        for (;i&lt;len;i++){</span>
+<span class="cstat-no" title="statement not covered" >            if (whiteList[i] == temp)</span>
+                break;
+        }
+<span class="cstat-no" title="statement not covered" >        if (i&lt;len){</span>
+<span class="cstat-no" title="statement not covered" >            if (i!=len-1) {</span>
+                // 如果移除的地址不是最后一个，将最后一个地址移动到移除位置
+                // 会影响白名单中的顺序，可以将i索引后面的元素都往前移动一位，最后再将最后一个元素移除。
+                whiteList[i] = whiteList[len-1];
+            }
+<span class="cstat-no" title="statement not covered" >            whiteList.pop()</span>;
+<span class="cstat-no" title="statement not covered" >            return true;</span>
+        }
+<span class="cstat-no" title="statement not covered" >        return false;</span>
+    }
+    // 检查地址是否在白名单中
+<span class="fstat-no" title="function not covered" >    function isEligibleAddress(address[] memory whiteList,address temp) internal pure returns (bool){</span>
+<span class="cstat-no" title="statement not covered" >        uint256 len = whiteList.length;</span>
+<span class="cstat-no" title="statement not covered" >        for (uint256 i=0;i&lt;len;i++){</span>
+<span class="cstat-no" title="statement not covered" >            if (whiteList[i] == temp)</span>
+<span class="cstat-no" title="statement not covered" >                return true;</span>
+        }
+<span class="cstat-no" title="statement not covered" >        return false;</span>
+    }
+}
+&nbsp;
+// 多签合约，继承自 multiSignatureClient
+contract multiSignature  is multiSignatureClient {
+    // 默认索引
+    uint256 private constant defaultIndex = 0;
+    // 使用白名单地址操作库
+    using whiteListAddress for address[];
+    // 签名所有者地址数组
+    address[] public signatureOwners;
+    // 签名阈值，代表一个签名申请需要获得的最少签名数量，达到该数量的申请才被认为有效。
+    uint256 public threshold;
+    // 签名信息结构体
+    struct signatureInfo {
+        // 申请者地址
+        address applicant;
+        // 签名者地址数组，用来存储将签署该申请的签名者地址。
+        address[] signatures;
+    }
+    // 消息哈希msgHash 到 签名信息数组的映射，一个交易哈希可以对应多个签名申请。
+    mapping(bytes32=&gt;signatureInfo[]) public signatureMap;
+&nbsp;
+    // 转移所有者事件
+    event TransferOwner(address indexed sender,address indexed oldOwner,address indexed newOwner);
+    // 创建申请事件
+    event CreateApplication(address indexed from,address indexed to,bytes32 indexed msgHash);
+    // 签署申请事件
+    event SignApplication(address indexed from,bytes32 indexed msgHash,uint256 index);
+    // 撤销签名事件
+    event RevokeApplication(address indexed from,bytes32 indexed msgHash,uint256 index);
+&nbsp;
+    /**
+     * @dev 构造函数，初始化签名所有者和签名阈值
+     * @param owners 签名所有者地址数组
+     * @param limitedSignNum 签名阈值
+     */
+<span class="fstat-no" title="function not covered" >    constructor(address[] memory owners,uint256 limitedSignNum) multiSignatureClient(address(this)) public {</span>
+<span class="cstat-no" title="statement not covered" >        require(owners.length&gt;=limitedSignNum,"Multiple Signature : Signature threshold is greater than owners' length!")</span>;
+        signatureOwners = owners;
+        threshold = limitedSignNum;
+    }
+&nbsp;
+    /**
+     * @dev 替换signatureOwners中指定索引的签名所有者
+     * @param index 待转移所有者的索引
+     * @param newOwner 新的所有者地址
+     */
+<span class="fstat-no" title="function not covered" >    function transferOwner(uint256 index,address newOwner) public onlyOwner validCall{</span>
+<span class="cstat-no" title="statement not covered" >        require(index&lt;signatureOwners.length,"Multiple Signature : Owner index is overflow!")</span>;
+<span class="cstat-no" title="statement not covered" >        emit TransferOwner(msg.sender,signatureOwners[index],newOwner);</span>
+        signatureOwners[index] = newOwner;
+    }
+&nbsp;
+    /**
+     * @dev 创建签名申请
+     * @param to 申请目标地址
+     * @return 申请在映射中的索引
+     */
+<span class="fstat-no" title="function not covered" >    function createApplication(address to) external returns(uint256) {</span>
+<span class="cstat-no" title="statement not covered" >        bytes32 msghash = getApplicationHash(msg.sender,to);</span>
+<span class="cstat-no" title="statement not covered" >        uint256 index = signatureMap[msghash].length;</span>
+<span class="cstat-no" title="statement not covered" >        signatureMap[msghash].push(signatureInfo(msg.sender,new address[](0)))</span>;
+<span class="cstat-no" title="statement not covered" >        emit CreateApplication(msg.sender,to,msghash);</span>
+<span class="cstat-no" title="statement not covered" >        return index;</span>
+    }
+&nbsp;
+    /**
+     * @dev 签署申请（使用默认索引）
+     * @param msghash 申请消息哈希
+     */
+<span class="fstat-no" title="function not covered" >    function signApplication(bytes32 msghash) external onlyOwner validIndex(msghash,defaultIndex){</span>
+<span class="cstat-no" title="statement not covered" >        emit SignApplication(msg.sender,msghash,defaultIndex);</span>
+<span class="cstat-no" title="statement not covered" >        signatureMap[msghash][defaultIndex].signatures.addWhiteListAddress(msg.sender)</span>;
+    }
+&nbsp;
+    /**
+     * @dev 撤销签名（使用默认索引）
+     * @param msghash 申请消息哈希
+     */
+<span class="fstat-no" title="function not covered" >    function revokeSignApplication(bytes32 msghash) external onlyOwner validIndex(msghash,defaultIndex){</span>
+<span class="cstat-no" title="statement not covered" >        emit RevokeApplication(msg.sender,msghash,defaultIndex);</span>
+<span class="cstat-no" title="statement not covered" >        signatureMap[msghash][defaultIndex].signatures.removeWhiteListAddress(msg.sender)</span>;
+    }
+&nbsp;
+    /**
+     * @dev 获取有效的签名申请索引
+     * @param msghash 申请消息哈希
+     * @param lastIndex 起始检查索引
+     * @return 有效的签名申请索引+1（签名者数组实际长度），若无则返回0
+     */
+<span class="fstat-no" title="function not covered" >    function getValidSignature(bytes32 msghash,uint256 lastIndex) external view returns(uint256){</span>
+<span class="cstat-no" title="statement not covered" >        signatureInfo[] storage info = signatureMap[msghash];</span>
+<span class="cstat-no" title="statement not covered" >        for (uint256 i=lastIndex;i&lt;info.length;i++){</span>
+<span class="cstat-no" title="statement not covered" >            if(info[i].signatures.length &gt;= threshold){</span>
+<span class="cstat-no" title="statement not covered" >                return i+1;</span>
+            }
+        }
+<span class="cstat-no" title="statement not covered" >        return 0;</span>
+    }
+&nbsp;
+    /**
+     * @dev 获取申请信息
+     * @param msghash 申请消息哈希
+     * @param index 申请索引
+     * @return 申请者地址和签名者地址数组
+     */
+<span class="fstat-no" title="function not covered" >    function getApplicationInfo(bytes32 msghash,uint256 index) validIndex(msghash,index) public view returns (address,address[]memory) {</span>
+<span class="cstat-no" title="statement not covered" >        signatureInfo memory info = signatureMap[msghash][index];</span>
+<span class="cstat-no" title="statement not covered" >        return (info.applicant,info.signatures);</span>
+    }
+&nbsp;
+    /**
+     * @dev 获取指定消息哈希的申请签名的数量
+     * @param msghash 申请消息哈希
+     * @return 申请数量
+     */
+<span class="fstat-no" title="function not covered" >    function getApplicationCount(bytes32 msghash) public view returns (uint256) {</span>
+<span class="cstat-no" title="statement not covered" >        return signatureMap[msghash].length;</span>
+    }
+&nbsp;
+    /**
+     * @dev 生成申请消息哈希
+     * @param from 申请者地址
+     * @param to 目标地址
+     * @return 消息哈希
+     */
+<span class="fstat-no" title="function not covered" >    function getApplicationHash(address from,address to) public pure returns (bytes32) {</span>
+<span class="cstat-no" title="statement not covered" >        return keccak256(abi.encodePacked(from, to));</span>
+    }
+&nbsp;
+    // 仅签名所有者可调用的修饰器
+<span class="fstat-no" title="function not covered" >    modifier onlyOwner{</span>
+<span class="cstat-no" title="statement not covered" >        require(signatureOwners.isEligibleAddress(msg.sender),"Multiple Signature : caller is not in the ownerList!")</span>;
+        _;
+    }
+&nbsp;
+    // 验证索引有效性的修饰器
+<span class="fstat-no" title="function not covered" >    modifier validIndex(bytes32 msghash,uint256 index){</span>
+<span class="cstat-no" title="statement not covered" >        require(index&lt;signatureMap[msghash].length,"Multiple Signature : Message index is overflow!")</span>;
+        _;
+    }
+}</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sun Sep 21 2025 17:26:45 GMT+0800 (中国标准时间)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>

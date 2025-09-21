@@ -1,0 +1,2768 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <title>Code coverage report for pledge\PledgePool.sol</title>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="../prettify.css" />
+    <link rel="stylesheet" href="../base.css" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style type='text/css'>
+        .coverage-summary .sorter {
+            background-image: url(../sort-arrow-sprite.png);
+        }
+    </style>
+</head>
+<body>
+<div class='wrapper'>
+  <div class='pad1'>
+    <h1>
+      <a href="../index.html">all files</a> / <a href="index.html">pledge/</a> PledgePool.sol
+    </h1>
+    <div class='clearfix'>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">16.59% </span>
+        <span class="quiet">Statements</span>
+        <span class='fraction'>34/205</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">15.22% </span>
+        <span class="quiet">Branches</span>
+        <span class='fraction'>35/230</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">38.46% </span>
+        <span class="quiet">Functions</span>
+        <span class='fraction'>15/39</span>
+      </div>
+      <div class='fl pad1y space-right2'>
+        <span class="strong">20.68% </span>
+        <span class="quiet">Lines</span>
+        <span class='fraction'>55/266</span>
+      </div>
+    </div>
+  </div>
+  <div class='status-line low'></div>
+<pre><table class="coverage">
+<tr><td class="line-count quiet">1
+2
+3
+4
+5
+6
+7
+8
+9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33
+34
+35
+36
+37
+38
+39
+40
+41
+42
+43
+44
+45
+46
+47
+48
+49
+50
+51
+52
+53
+54
+55
+56
+57
+58
+59
+60
+61
+62
+63
+64
+65
+66
+67
+68
+69
+70
+71
+72
+73
+74
+75
+76
+77
+78
+79
+80
+81
+82
+83
+84
+85
+86
+87
+88
+89
+90
+91
+92
+93
+94
+95
+96
+97
+98
+99
+100
+101
+102
+103
+104
+105
+106
+107
+108
+109
+110
+111
+112
+113
+114
+115
+116
+117
+118
+119
+120
+121
+122
+123
+124
+125
+126
+127
+128
+129
+130
+131
+132
+133
+134
+135
+136
+137
+138
+139
+140
+141
+142
+143
+144
+145
+146
+147
+148
+149
+150
+151
+152
+153
+154
+155
+156
+157
+158
+159
+160
+161
+162
+163
+164
+165
+166
+167
+168
+169
+170
+171
+172
+173
+174
+175
+176
+177
+178
+179
+180
+181
+182
+183
+184
+185
+186
+187
+188
+189
+190
+191
+192
+193
+194
+195
+196
+197
+198
+199
+200
+201
+202
+203
+204
+205
+206
+207
+208
+209
+210
+211
+212
+213
+214
+215
+216
+217
+218
+219
+220
+221
+222
+223
+224
+225
+226
+227
+228
+229
+230
+231
+232
+233
+234
+235
+236
+237
+238
+239
+240
+241
+242
+243
+244
+245
+246
+247
+248
+249
+250
+251
+252
+253
+254
+255
+256
+257
+258
+259
+260
+261
+262
+263
+264
+265
+266
+267
+268
+269
+270
+271
+272
+273
+274
+275
+276
+277
+278
+279
+280
+281
+282
+283
+284
+285
+286
+287
+288
+289
+290
+291
+292
+293
+294
+295
+296
+297
+298
+299
+300
+301
+302
+303
+304
+305
+306
+307
+308
+309
+310
+311
+312
+313
+314
+315
+316
+317
+318
+319
+320
+321
+322
+323
+324
+325
+326
+327
+328
+329
+330
+331
+332
+333
+334
+335
+336
+337
+338
+339
+340
+341
+342
+343
+344
+345
+346
+347
+348
+349
+350
+351
+352
+353
+354
+355
+356
+357
+358
+359
+360
+361
+362
+363
+364
+365
+366
+367
+368
+369
+370
+371
+372
+373
+374
+375
+376
+377
+378
+379
+380
+381
+382
+383
+384
+385
+386
+387
+388
+389
+390
+391
+392
+393
+394
+395
+396
+397
+398
+399
+400
+401
+402
+403
+404
+405
+406
+407
+408
+409
+410
+411
+412
+413
+414
+415
+416
+417
+418
+419
+420
+421
+422
+423
+424
+425
+426
+427
+428
+429
+430
+431
+432
+433
+434
+435
+436
+437
+438
+439
+440
+441
+442
+443
+444
+445
+446
+447
+448
+449
+450
+451
+452
+453
+454
+455
+456
+457
+458
+459
+460
+461
+462
+463
+464
+465
+466
+467
+468
+469
+470
+471
+472
+473
+474
+475
+476
+477
+478
+479
+480
+481
+482
+483
+484
+485
+486
+487
+488
+489
+490
+491
+492
+493
+494
+495
+496
+497
+498
+499
+500
+501
+502
+503
+504
+505
+506
+507
+508
+509
+510
+511
+512
+513
+514
+515
+516
+517
+518
+519
+520
+521
+522
+523
+524
+525
+526
+527
+528
+529
+530
+531
+532
+533
+534
+535
+536
+537
+538
+539
+540
+541
+542
+543
+544
+545
+546
+547
+548
+549
+550
+551
+552
+553
+554
+555
+556
+557
+558
+559
+560
+561
+562
+563
+564
+565
+566
+567
+568
+569
+570
+571
+572
+573
+574
+575
+576
+577
+578
+579
+580
+581
+582
+583
+584
+585
+586
+587
+588
+589
+590
+591
+592
+593
+594
+595
+596
+597
+598
+599
+600
+601
+602
+603
+604
+605
+606
+607
+608
+609
+610
+611
+612
+613
+614
+615
+616
+617
+618
+619
+620
+621
+622
+623
+624
+625
+626
+627
+628
+629
+630
+631
+632
+633
+634
+635
+636
+637
+638
+639
+640
+641
+642
+643
+644
+645
+646
+647
+648
+649
+650
+651
+652
+653
+654
+655
+656
+657
+658
+659
+660
+661
+662
+663
+664
+665
+666
+667
+668
+669
+670
+671
+672
+673
+674
+675
+676
+677
+678
+679
+680
+681
+682
+683
+684
+685
+686
+687
+688
+689
+690
+691
+692
+693
+694
+695
+696
+697
+698
+699
+700
+701
+702
+703
+704
+705
+706
+707
+708
+709
+710
+711
+712
+713
+714
+715
+716
+717
+718
+719
+720
+721
+722
+723
+724
+725
+726
+727
+728
+729
+730
+731
+732
+733
+734
+735
+736
+737
+738
+739
+740
+741
+742
+743
+744
+745
+746
+747
+748
+749
+750
+751
+752
+753
+754
+755
+756
+757
+758
+759
+760
+761
+762
+763
+764
+765
+766
+767
+768
+769
+770
+771
+772
+773
+774
+775
+776
+777
+778
+779
+780
+781
+782
+783
+784
+785
+786
+787
+788
+789
+790
+791
+792
+793
+794
+795
+796
+797
+798
+799
+800
+801
+802
+803
+804
+805
+806
+807
+808
+809
+810
+811
+812
+813
+814
+815
+816
+817
+818
+819
+820
+821
+822
+823
+824
+825
+826
+827
+828
+829
+830
+831
+832
+833
+834
+835
+836
+837
+838
+839
+840
+841
+842
+843
+844
+845
+846
+847
+848
+849
+850
+851
+852
+853
+854
+855
+856
+857
+858
+859
+860
+861
+862
+863
+864
+865
+866
+867
+868
+869
+870
+871
+872
+873
+874
+875
+876
+877
+878
+879
+880
+881
+882
+883
+884
+885
+886
+887
+888
+889
+890
+891
+892
+893
+894
+895
+896
+897
+898
+899
+900
+901
+902</td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">75×</span>
+<span class="cline-any cline-yes">75×</span>
+<span class="cline-any cline-yes">75×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">75×</span>
+<span class="cline-any cline-yes">75×</span>
+<span class="cline-any cline-yes">75×</span>
+<span class="cline-any cline-yes">75×</span>
+<span class="cline-any cline-yes">75×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-yes">3×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">17×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">17×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">17×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">17×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">17×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-yes">4×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">9×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">1×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">2×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">13×</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">12×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-yes">10×</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span></td><td class="text"><pre class="prettyprint lang-js">// SPDX-License-Identifier: MIT
+&nbsp;
+pragma solidity 0.6.12;
+&nbsp;
+// 导入OpenZeppelin的防重入攻击合约
+import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
+// 导入自定义的安全转账库
+import "../library/SafeTransfer.sol";
+// 导入债务代币接口
+import "../interface/IDebtToken.sol";
+// 导入BSC质押预言机接口
+import "../interface/IBscPledgeOracle.sol";
+// 导入Uniswap V2路由接口
+import "../interface/IUniswapV2Router02.sol";
+// 导入多签客户端合约
+import "../multiSignature/multiSignatureClient.sol";
+&nbsp;
+&nbsp;
+&nbsp;
+contract PledgePool is ReentrancyGuard, SafeTransfer, multiSignatureClient{
+&nbsp;
+    // 为 uint256 类型引入 SafeMath 库，防止数值溢出和下溢
+    using SafeMath for uint256;
+    // 为 IERC20 类型引入 SafeERC20 库，确保 ERC20 代币操作的安全性
+    using SafeERC20 for IERC20;
+    // 默认精度，用于计算时的单位转换，值为 10 的 18 次方
+    uint256 constant internal calDecimal = 1e18;
+    // 基于手续费和利息的精度，值为 10 的 8 次方
+    uint256 constant internal baseDecimal = 1e8;
+    // 最小操作金额，值为 100 * 10 的 18 次方
+    uint256 public minAmount = 100e18;
+    // 一年的时间，用于时间相关的计算
+    uint256 constant baseYear = 365 days;
+&nbsp;
+    // 定义借贷池的状态枚举
+    enum PoolState{ 
+        MATCH,      // 匹配状态
+        EXECUTION,  // 执行状态
+        FINISH,     // 完成状态
+        LIQUIDATION,// 清算状态
+        UNDONE      // 未完成状态
+    }
+    // 默认的池状态，初始化为匹配状态
+    PoolState constant defaultChoice = PoolState.MATCH;
+&nbsp;
+    // 全局暂停标志，用于控制合约是否暂停操作
+    bool public globalPaused = false;
+    // PancakeSwap 交换路由器地址，用于代币交换操作
+    address public swapRouter;
+    // 接收手续费的地址
+    address payable public feeAddress;
+    // BSC 质押预言机地址，用于获取价格等数据
+    IBscPledgeOracle public oracle;
+    // 出借手续费
+    uint256 public lendFee;
+    // 借款手续费
+    uint256 public borrowFee;
+&nbsp;
+    // 每个池的基本信息
+    struct PoolBaseInfo{
+        uint256 settleTime;         // 结算时间
+        uint256 endTime;            // 结束时间
+        uint256 interestRate;       // 池的固定利率，单位是1e8 (1e8 表示 10 的 8 次方，用于表示百分比精度，例如 1e8 代表 100%)
+        uint256 maxSupply;          // 池的最大限额
+        uint256 lendSupply;         // 当前实际存款的借出金额
+        uint256 borrowSupply;       // 当前实际存款的借入金额
+        uint256 martgageRate;       // 池的抵押率，单位是1e8 (1e8)，表示借款人需要质押的资产金额与借款金额的比例，用于衡量借款的风险程度，例如值为 150e8 代表抵押率为 150%
+        address lendToken;          // 出借方代币地址 (比如 BUSD..)
+        address borrowToken;        // 借款方代币地址 (比如 BTC..)
+        PoolState state;            // 状态 'MATCH, EXECUTION, FINISH, LIQUIDATION, UNDONE'
+        IDebtToken spCoin;          // sp_token 为出借债务代币，用于记录出借人的债权，当出借人完成存款后可领取该代币，后续可用于取回本金和利息 (比如 spBUSD_1..)
+        IDebtToken jpCoin;          // jp_token 为借款债务代币，用于记录借款人的债务，借款人质押资产借款时涉及该代币的相关操作 (比如 jpBTC_1..)
+        uint256 autoLiquidateThreshold; // 自动清算阈值，当借款人的抵押资产价值与借款金额的比例低于该阈值时，意味着借款人抵押资产可能不足以覆盖借款金额，存在违约风险，为保障出借人的资金安全，将触发自动清算流程，单位是1e8 。
+    }
+&nbsp;
+    // 所有的池子基本信息
+    PoolBaseInfo[] public poolBaseInfo;
+&nbsp;
+    // 每个池的数据信息
+    struct PoolDataInfo{
+        uint256 settleAmountLend;       // 结算时的实际出借金额
+        uint256 settleAmountBorrow;     // 结算时的实际借款金额
+        uint256 finishAmountLend;       // 完成时的实际出借金额
+        uint256 finishAmountBorrow;     // 完成时的实际借款金额
+        uint256 liquidationAmounLend;   // 清算时的实际出借金额
+        uint256 liquidationAmounBorrow; // 清算时的实际借款金额
+    }
+    // 所有的池子数据信息
+    PoolDataInfo[] public poolDataInfo;
+&nbsp;
+    // 借款用户信息
+    struct BorrowInfo {
+        uint256 stakeAmount;           // 当前借款的所有质押金额
+        uint256 refundAmount;          // 多余的退款金额
+        bool hasNoRefund;              // 默认为false，false = 未退款，true = 已退款
+        bool hasNoClaim;               // 默认为false，false = 未认领，true = 已认领
+    }
+    // 每个用户在不同索引池子的借款信息 {user.address : {pool.index : user.borrowInfo}}
+    mapping (address =&gt; mapping (uint256 =&gt; BorrowInfo)) public userBorrowInfo;
+&nbsp;
+    // 出借用户信息
+    struct LendInfo {
+        uint256 stakeAmount;          // 当前借款的所有质押金额
+        uint256 refundAmount;         // 超额退款金额
+        bool hasNoRefund;             // 默认为false，false = 无退款，true = 已退款
+        bool hasNoClaim;              // 默认为false，false = 无索赔，true = 已索赔
+    }
+    // 每个用户在不同索引池子的出借信息 {user.address : {pool.index : user.lendInfo}}
+    mapping (address =&gt; mapping (uint256 =&gt; LendInfo)) public userLendInfo;
+&nbsp;
+    // 事件
+    // 存款借出事件，from是借出者地址，token是借出的代币地址，amount是借出的数量，mintAmount是根据出借数量实际生成的债务代币数量（sp_token）
+    event DepositLend(address indexed from,address indexed token,uint256 amount,uint256 mintAmount);
+    // 借出退款事件，from是退款者地址，token是退款的代币地址，refund是退款的数量
+    // 退款操作是退还过量存款，此时债务代币尚未铸造，因此无需销毁债务代币
+    event RefundLend(address indexed from, address indexed token, uint256 refund); 
+    // 借出索赔事件，from是索赔者地址，token是索赔的代币地址，amount是索赔的数量
+    // 索赔操作是领取债务代币，是铸造代币的过程，并非销毁代币的过程
+    event ClaimLend(address indexed from, address indexed token, uint256 amount); 
+    // 提取借出事件，from是提取者地址，token是提取的代币地址，amount是提取的数量，burnAmount是在提取操作中需要销毁的债务代币（sp_token）的数量
+    // 提取操作是取回本金和利息，需要销毁对应的债务代币以保证债权的一致性和防止重复提取
+    event WithdrawLend(address indexed from,address indexed token,uint256 amount,uint256 burnAmount);
+    // 存款借入事件，from是借入者地址，token是借入的代币地址，amount是借入的数量，mintAmount是根据借入数量实际生成的债务代币数量（jp_token）
+    event DepositBorrow(address indexed from,address indexed token,uint256 amount,uint256 mintAmount); 
+    // 借入退款事件，from是退款者地址，token是退款的代币地址，refund是退款的数量
+    // 退款操作是退还过量借入，此时债务代币尚未铸造，因此无需销毁债务代币
+    event RefundBorrow(address indexed from, address indexed token, uint256 refund);
+    // 借入索赔事件，from是索赔者地址，token是索赔的代币地址，amount是索赔的数量
+    // 索赔操作是领取债务代币，是铸造代币的过程，并非销毁代币的过程
+    event ClaimBorrow(address indexed from, address indexed token, uint256 amount); 
+    // 提取借入事件，from是提取者地址，token是提取的代币地址，amount是提取的数量，burnAmount是在提取操作中需要销毁的债务代币（jp_token）的数量
+    // 提取操作是取回本金和利息，需要销毁对应的债务代币以保证债权的一致性和防止重复提取
+    event WithdrawBorrow(address indexed from,address indexed token,uint256 amount,uint256 burnAmount); 
+&nbsp;
+    // 交换事件，fromCoin是交换前的币种地址，toCoin是交换后的币种地址，fromValue是交换前的数量，toValue是交换后的数量
+    event Swap(address indexed fromCoin,address indexed toCoin,uint256 fromValue,uint256 toValue); 
+    // 紧急借入提取事件，from是提取者地址，token是提取的代币地址，amount是提取的数量
+    event EmergencyBorrowWithdrawal(address indexed from, address indexed token, uint256 amount); 
+     // 紧急借出提取事件，from是提取者地址，token是提取的代币地址，amount是提取的数量
+    event EmergencyLendWithdrawal(address indexed from, address indexed token, uint256 amount);
+    // 状态改变事件，pid是池子id，beforeState是改变前的状态，afterState是改变后的状态
+    event StateChange(uint256 indexed pid, uint256 indexed beforeState, uint256 indexed afterState); 
+     // 设置费用事件，newLendFee是新的借出费用，newBorrowFee是新的借入费用
+    event SetFee(uint256 indexed newLendFee, uint256 indexed newBorrowFee);
+    // 设置交换路由器地址事件，oldSwapAddress是旧的交换地址，newSwapAddress是新的交换地址
+    event SetSwapRouterAddress(address indexed oldSwapAddress, address indexed newSwapAddress); 
+     // 设置费用地址事件，oldFeeAddress是旧的费用地址，newFeeAddress是新的费用地址
+    event SetFeeAddress(address indexed oldFeeAddress, address indexed newFeeAddress);
+    // 设置最小操作金额事件，oldMinAmount是旧的最小操作金额，newMinAmount是新的最小操作金额。该最小操作金额用于限制存入借出资金和存入借入资金操作的最小数量。
+    event SetMinAmount(uint256 indexed oldMinAmount, uint256 indexed newMinAmount);
+&nbsp;
+    constructor(
+        address _oracle,
+        address _swapRouter,
+        address payable _feeAddress,
+        address _multiSignature
+    ) multiSignatureClient(_multiSignature) public {
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(_oracle != address(0), "Is zero address");
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(_swapRouter != address(0), "Is zero address");
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(_feeAddress != address(0), "Is zero address");
+&nbsp;
+        oracle = IBscPledgeOracle(_oracle);
+        swapRouter = _swapRouter;
+        feeAddress = _feeAddress;
+        lendFee = 0;
+        borrowFee = 0;
+    }
+&nbsp;
+    /**
+     * @dev Set the lend fee and borrow fee
+     * @notice Only allow administrators to operate
+     */
+    function setFee(uint256 _lendFee,uint256 _borrowFee) <span class="missing-if-branch" title="else path not taken" >E</span>validCall external{
+        lendFee = _lendFee;
+        borrowFee = _borrowFee;
+        emit SetFee(_lendFee, _borrowFee);
+    }
+&nbsp;
+    /**
+     * @dev Set swap router address, example pancakeswap or babyswap..
+     * @notice Only allow administrators to operate
+     */
+    function setSwapRouterAddress(address _swapRouter) <span class="missing-if-branch" title="else path not taken" >E</span>validCall external{
+        require(_swapRouter != address(0), "Is zero address");
+        emit SetSwapRouterAddress(swapRouter,_swapRouter);
+        swapRouter = _swapRouter;
+    }
+&nbsp;
+    /**
+     * @dev Set up the address to receive the handling fee
+     * @notice Only allow administrators to operate
+     */
+    function setFeeAddress(address payable _feeAddress) <span class="missing-if-branch" title="else path not taken" >E</span>validCall external {
+        require(_feeAddress != address(0), "Is zero address");
+        emit SetFeeAddress(feeAddress, _feeAddress);
+        feeAddress = _feeAddress;
+    }
+&nbsp;
+    /**
+     * @dev Set the min amount
+     */
+    function setMinAmount(uint256 _minAmount) <span class="missing-if-branch" title="else path not taken" >E</span>validCall external {
+        emit SetMinAmount(minAmount,_minAmount);
+        minAmount = _minAmount;
+    }
+&nbsp;
+&nbsp;
+     /**
+     * @dev Query pool length
+     */
+    function poolLength() external view returns (uint256) {
+        return poolBaseInfo.length;
+    }
+&nbsp;
+    /**
+     * @dev 创建一个新的借贷池。函数接收一系列参数，包括结算时间、结束时间、利率、最大供应量、抵押率、借款代币、借出代币、SP代币、JP代币和自动清算阈值。
+     *  Can only be called by the owner.
+     */
+    function createPoolInfo(uint256 _settleTime,  uint256 _endTime, uint64 _interestRate,
+                        uint256 _maxSupply, uint256 _martgageRate, address _lendToken, address _borrowToken,
+                    address _spToken, address _jpToken, uint256 _autoLiquidateThreshold) public <span class="missing-if-branch" title="else path not taken" >E</span>validCall{
+        // 检查是否已设置token ...
+        // 需要结束时间大于结算时间
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(_endTime &gt; _settleTime, "createPool:end time grate than settle time");
+        // 需要_jpToken不是零地址
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(_jpToken != address(0), "createPool:is zero address");
+        // 需要_spToken不是零地址
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(_spToken != address(0), "createPool:is zero address");
+&nbsp;
+        // push进基础池信息
+        poolBaseInfo.push(PoolBaseInfo({
+            settleTime: _settleTime,
+            endTime: _endTime,
+            interestRate: _interestRate,
+            maxSupply: _maxSupply,
+            lendSupply:0,
+            borrowSupply:0,
+            martgageRate: _martgageRate,
+            lendToken:_lendToken,
+            borrowToken:_borrowToken,
+            state: defaultChoice,
+            spCoin: IDebtToken(_spToken),
+            jpCoin: IDebtToken(_jpToken),
+            autoLiquidateThreshold:_autoLiquidateThreshold
+        }));
+        // 推入池数据信息
+        poolDataInfo.push(PoolDataInfo({
+            settleAmountLend:0,
+            settleAmountBorrow:0,
+            finishAmountLend:0,
+            finishAmountBorrow:0,
+            liquidationAmounLend:0,
+            liquidationAmounBorrow:0
+        }));
+    }
+      /**
+     * @dev Get pool state
+     * @notice returned is an int integer
+     */
+    function getPoolState(uint256 _pid) public view returns (uint256) {
+        PoolBaseInfo storage pool = poolBaseInfo[_pid];
+        return uint256(pool.state);
+    }
+&nbsp;
+       /**
+     * @dev 存款人执行存款操作
+     * @notice 池状态必须为MATCH
+     * @param _pid 是池索引
+     * @param _stakeAmount 是用户的质押金额
+     */
+    function depositLend(uint256 _pid, uint256 _stakeAmount) external payable <span class="missing-if-branch" title="else path not taken" >E</span>nonReentrant notPause timeBefore(_pid) <span class="missing-if-branch" title="else path not taken" >E</span>stateMatch(_pid){
+        // 时间和状态的限制
+        PoolBaseInfo storage pool = poolBaseInfo[_pid];
+        LendInfo storage lendInfo = userLendInfo[msg.sender][_pid];
+        // 边界条件
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(_stakeAmount &lt;= (pool.maxSupply).sub(pool.lendSupply), "depositLend: 数量超过限制");
+        uint256 amount = getPayableAmount(pool.lendToken,_stakeAmount);
+        require(amount &gt; minAmount, "depositLend: 少于最小金额");
+        // 保存借款用户信息
+        lendInfo.hasNoClaim = false;
+        lendInfo.hasNoRefund = false;
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (pool.lendToken == address(0)){
+            lendInfo.stakeAmount = lendInfo.stakeAmount.add(msg.value);
+            pool.lendSupply = pool.lendSupply.add(msg.value);
+        } else {
+            lendInfo.stakeAmount = lendInfo.stakeAmount.add(_stakeAmount);
+            pool.lendSupply = pool.lendSupply.add(_stakeAmount);
+        }
+        emit DepositLend(msg.sender, pool.lendToken, _stakeAmount, amount);
+    }
+&nbsp;
+       /**
+     * @dev 退还过量存款给存款人
+     * @notice 池状态不等于匹配和未完成
+     * @param _pid 是池索引
+     */
+<span class="fstat-no" title="function not covered" >    function refundLend(uint256 _pid) external nonReentrant notPause timeAfter(_pid) stateNotMatchUndone(_pid){</span>
+<span class="cstat-no" title="statement not covered" >        PoolBaseInfo storage pool = poolBaseInfo[_pid];</span> // 获取池的基本信息
+<span class="cstat-no" title="statement not covered" >        PoolDataInfo storage data = poolDataInfo[_pid];</span> // 获取池的数据信息
+<span class="cstat-no" title="statement not covered" >        LendInfo storage lendInfo = userLendInfo[msg.sender][_pid];</span> // 获取用户的出借信息
+        // 限制金额
+<span class="cstat-no" title="statement not covered" >        require(lendInfo.stakeAmount &gt; 0, "refundLend: not pledged")</span>; // 需要用户已经质押了一定数量
+<span class="cstat-no" title="statement not covered" >        require(pool.lendSupply.sub(data.settleAmountLend) &gt; 0, "refundLend: not refund")</span>; // 需要池中还有未退还的金额
+<span class="cstat-no" title="statement not covered" >        require(!lendInfo.hasNoRefund, "refundLend: repeat refund")</span>; // 需要用户没有重复退款
+        // 用户份额 = 当前质押金额 / 总金额
+        // stakeAmount 是用户实际质押的金额，代表用户在该池中投入的资金数量
+        // pool.lendSupply 是当前池中的总借出供应量，为所有用户质押金额的总和
+<span class="cstat-no" title="statement not covered" >        uint256 userShare = lendInfo.stakeAmount.mul(calDecimal).div(pool.lendSupply);</span>
+        // refundAmount = 总退款金额 * 用户份额
+        // data.settleAmountLend 是结算时的实际出借金额，是经过匹配和计算后确定的有效出借量
+        // pool.lendSupply.sub(data.settleAmountLend) 得到的是总退款金额，即总借出供应量中未被有效使用的部分
+<span class="cstat-no" title="statement not covered" >        uint256 refundAmount = (pool.lendSupply.sub(data.settleAmountLend)).mul(userShare).div(calDecimal);</span>
+        // 退款操作
+<span class="cstat-no" title="statement not covered" >        _redeem(msg.sender,pool.lendToken,refundAmount)</span>;
+        // 更新用户信息
+        lendInfo.hasNoRefund = true;
+        lendInfo.refundAmount = lendInfo.refundAmount.add(refundAmount);
+<span class="cstat-no" title="statement not covered" >        emit RefundLend(msg.sender, pool.lendToken, refundAmount);</span> // 触发退款事件
+    }
+&nbsp;
+     /**
+     * @dev 存款人接收 sp_toke,主要功能是让存款人领取 sp_token
+     * @notice 池状态不等于匹配和未完成
+     * @param _pid 是池索引
+     */
+<span class="fstat-no" title="function not covered" >    function claimLend(uint256 _pid) external nonReentrant notPause timeAfter(_pid) stateNotMatchUndone(_pid){</span>
+<span class="cstat-no" title="statement not covered" >        PoolBaseInfo storage pool = poolBaseInfo[_pid];</span> // 获取池的基本信息
+<span class="cstat-no" title="statement not covered" >        PoolDataInfo storage data = poolDataInfo[_pid];</span> // 获取池的数据信息
+<span class="cstat-no" title="statement not covered" >        LendInfo storage lendInfo = userLendInfo[msg.sender][_pid];</span> // 获取用户的借款信息
+        // 金额限制
+<span class="cstat-no" title="statement not covered" >        require(lendInfo.stakeAmount &gt; 0, "claimLend: 不能领取 sp_token")</span>; // 需要用户的质押金额大于0
+<span class="cstat-no" title="statement not covered" >        require(!lendInfo.hasNoClaim,"claimLend: 不能再次领取")</span>; // 用户不能再次领取
+        // 用户份额 = 当前质押金额 / 总金额
+<span class="cstat-no" title="statement not covered" >        uint256 userShare = lendInfo.stakeAmount.mul(calDecimal).div(pool.lendSupply); </span>
+        // totalSpAmount = settleAmountLend
+<span class="cstat-no" title="statement not covered" >        uint256 totalSpAmount = data.settleAmountLend;</span> // 总的Sp金额等于借款结算金额
+        // 用户 sp 金额 = totalSpAmount * 用户份额
+<span class="cstat-no" title="statement not covered" >        uint256 spAmount = totalSpAmount.mul(userShare).div(calDecimal); </span>
+        // 铸造 sp token
+<span class="cstat-no" title="statement not covered" >        pool.spCoin.mint(msg.sender, spAmount)</span>; 
+        // 更新领取标志
+        lendInfo.hasNoClaim = true; 
+<span class="cstat-no" title="statement not covered" >        emit ClaimLend(msg.sender, pool.borrowToken, spAmount);</span> // 触发领取借款事件
+    }
+&nbsp;
+        /**
+     * @dev 存款人取回本金和利息
+     * @notice 池的状态可能是完成或清算
+     * @param _pid 是池索引
+     * @param _spAmount 是销毁的sp数量
+     */
+<span class="fstat-no" title="function not covered" >    function withdrawLend(uint256 _pid, uint256 _spAmount)  external nonReentrant notPause stateFinishLiquidation(_pid) {</span>
+<span class="cstat-no" title="statement not covered" >        PoolBaseInfo storage pool = poolBaseInfo[_pid];</span>
+<span class="cstat-no" title="statement not covered" >        PoolDataInfo storage data = poolDataInfo[_pid];</span>
+<span class="cstat-no" title="statement not covered" >        require(_spAmount &gt; 0, 'withdrawLend: 取款金额为零')</span>;
+        // 销毁 sp_token
+<span class="cstat-no" title="statement not covered" >        pool.spCoin.burn(msg.sender,_spAmount)</span>;
+        // 计算销毁份额
+<span class="cstat-no" title="statement not covered" >        uint256 totalSpAmount = data.settleAmountLend;</span>
+        // sp份额 = _spAmount/totalSpAmount
+<span class="cstat-no" title="statement not covered" >        uint256 spShare = _spAmount.mul(calDecimal).div(totalSpAmount);</span>
+        // 完成
+<span class="cstat-no" title="statement not covered" >        if (pool.state == PoolState.FINISH){</span>
+<span class="cstat-no" title="statement not covered" >            require(block.timestamp &gt; pool.endTime, "withdrawLend: 少于结束时间")</span>;
+            // 赎回金额 = finishAmountLend * sp份额
+<span class="cstat-no" title="statement not covered" >            uint256 redeemAmount = data.finishAmountLend.mul(spShare).div(calDecimal);</span>
+            // 退款动作
+<span class="cstat-no" title="statement not covered" >             _redeem(msg.sender,pool.lendToken,redeemAmount)</span>;
+<span class="cstat-no" title="statement not covered" >            emit WithdrawLend(msg.sender,pool.lendToken,redeemAmount,_spAmount);</span>
+        }
+        // 清算
+<span class="cstat-no" title="statement not covered" >        if (pool.state == PoolState.LIQUIDATION) {</span>
+<span class="cstat-no" title="statement not covered" >            require(block.timestamp &gt; pool.settleTime, "withdrawLend: 少于匹配时间")</span>;
+            // 赎回金额
+<span class="cstat-no" title="statement not covered" >            uint256 redeemAmount = data.liquidationAmounLend.mul(spShare).div(calDecimal);</span>
+            // 退款动作
+<span class="cstat-no" title="statement not covered" >             _redeem(msg.sender,pool.lendToken,redeemAmount)</span>;
+<span class="cstat-no" title="statement not covered" >            emit WithdrawLend(msg.sender,pool.lendToken,redeemAmount,_spAmount);</span>
+        }
+    }
+&nbsp;
+       /**
+     * @dev 紧急提取贷款
+     * @notice 池状态必须是未完成
+     * @param _pid 是池索引
+     */
+<span class="fstat-no" title="function not covered" >    function emergencyLendWithdrawal(uint256 _pid) external nonReentrant notPause stateUndone(_pid){</span>
+<span class="cstat-no" title="statement not covered" >        PoolBaseInfo storage pool = poolBaseInfo[_pid];</span> // 获取池的基本信息
+<span class="cstat-no" title="statement not covered" >        require(pool.lendSupply &gt; 0,"emergencLend: not withdrawal")</span>; // 要求贷款供应大于0
+        // 贷款紧急提款
+<span class="cstat-no" title="statement not covered" >        LendInfo storage lendInfo = userLendInfo[msg.sender][_pid];</span> // 获取用户的贷款信息
+        // 限制金额
+<span class="cstat-no" title="statement not covered" >        require(lendInfo.stakeAmount &gt; 0, "refundLend: not pledged")</span>; // 要求质押金额大于0
+<span class="cstat-no" title="statement not covered" >        require(!lendInfo.hasNoRefund, "refundLend: again refund")</span>; // 要求没有退款
+        // 退款操作
+<span class="cstat-no" title="statement not covered" >        _redeem(msg.sender,pool.lendToken,lendInfo.stakeAmount)</span>; // 执行赎回操作
+        // 更新用户信息
+        lendInfo.hasNoRefund = true; // 设置没有退款为真
+<span class="cstat-no" title="statement not covered" >        emit EmergencyLendWithdrawal(msg.sender, pool.lendToken, lendInfo.stakeAmount);</span> // 触发紧急贷款提款事件
+    }
+&nbsp;
+&nbsp;
+&nbsp;
+       /**
+     * @dev 借款人质押操作
+     * @param _pid 是池子索引
+     * @param _stakeAmount 是用户质押的数量
+     */
+<span class="fstat-no" title="function not covered" >    function depositBorrow(uint256 _pid, uint256 _stakeAmount ) external payable nonReentrant notPause timeBefore(_pid) stateMatch(_pid){</span>
+        // 基础信息
+<span class="cstat-no" title="statement not covered" >        PoolBaseInfo storage pool = poolBaseInfo[_pid];</span> // 获取池子基础信息
+<span class="cstat-no" title="statement not covered" >        BorrowInfo storage borrowInfo = userBorrowInfo[msg.sender][_pid];</span> // 获取用户借款信息
+        // 动作
+<span class="cstat-no" title="statement not covered" >        uint256 amount = getPayableAmount(pool.borrowToken, _stakeAmount);</span> // 获取应付金额
+<span class="cstat-no" title="statement not covered" >        require(amount &gt; 0, 'depositBorrow: deposit amount is zero')</span>; // 要求质押金额大于0
+        // 保存用户信息
+        borrowInfo.hasNoClaim = false; // 设置用户未提取质押物
+        borrowInfo.hasNoRefund = false; // 设置用户未退款
+        // 更新信息
+<span class="cstat-no" title="statement not covered" >        if (pool.borrowToken == address(0)){ // 如果借款代币是0地址（即ETH）</span>
+            borrowInfo.stakeAmount = borrowInfo.stakeAmount.add(msg.value); // 更新用户质押金额
+            pool.borrowSupply = pool.borrowSupply.add(msg.value); // 更新池子借款供应量
+        } else{ // 如果借款代币不是0地址（即其他ERC20代币）
+            borrowInfo.stakeAmount = borrowInfo.stakeAmount.add(_stakeAmount); // 更新用户质押金额
+            pool.borrowSupply = pool.borrowSupply.add(_stakeAmount); // 更新池子借款供应量
+        }
+<span class="cstat-no" title="statement not covered" >        emit DepositBorrow(msg.sender, pool.borrowToken, _stakeAmount, amount);</span> // 触发质押借款事件
+    }
+&nbsp;
+        /**
+     * @dev 退还给借款人的过量存款，当借款人的质押量大于0，且借款供应量减去结算借款量大于0，且借款人没有退款时，计算退款金额并进行退款。
+     * @notice 池状态不等于匹配和未完成
+     * @param _pid 是池状态
+     */
+<span class="fstat-no" title="function not covered" >    function refundBorrow(uint256 _pid) external nonReentrant notPause timeAfter(_pid) stateNotMatchUndone(_pid){</span>
+        // 基础信息
+<span class="cstat-no" title="statement not covered" >        PoolBaseInfo storage pool = poolBaseInfo[_pid];</span> // 获取池的基础信息
+<span class="cstat-no" title="statement not covered" >        PoolDataInfo storage data = poolDataInfo[_pid];</span> // 获取池的数据信息
+<span class="cstat-no" title="statement not covered" >        BorrowInfo storage borrowInfo = userBorrowInfo[msg.sender][_pid];</span> // 获取借款人的信息
+        // 条件
+<span class="cstat-no" title="statement not covered" >        require(pool.borrowSupply.sub(data.settleAmountBorrow) &gt; 0, "refundBorrow: not refund")</span>; // 需要借款供应量减去结算借款量大于0
+<span class="cstat-no" title="statement not covered" >        require(borrowInfo.stakeAmount &gt; 0, "refundBorrow: not pledged")</span>; // 需要借款人的质押量大于0
+<span class="cstat-no" title="statement not covered" >        require(!borrowInfo.hasNoRefund, "refundBorrow: again refund")</span>; // 需要借款人没有退款
+        // 计算用户份额
+<span class="cstat-no" title="statement not covered" >        uint256 userShare = borrowInfo.stakeAmount.mul(calDecimal).div(pool.borrowSupply);</span> // 用户份额等于借款人的质押量乘以计算小数点后的位数，然后除以借款供应量
+<span class="cstat-no" title="statement not covered" >        uint256 refundAmount = (pool.borrowSupply.sub(data.settleAmountBorrow)).mul(userShare).div(calDecimal);</span> // 退款金额等于（借款供应量减去结算借款量）乘以用户份额，然后除以计算小数点后的位数
+        // 动作
+<span class="cstat-no" title="statement not covered" >        _redeem(msg.sender,pool.borrowToken,refundAmount)</span>; // 赎回
+        // 更新用户信息
+        borrowInfo.refundAmount = borrowInfo.refundAmount.add(refundAmount); // 更新借款人的退款金额
+        borrowInfo.hasNoRefund = true; // 设置借款人已经退款
+<span class="cstat-no" title="statement not covered" >        emit RefundBorrow(msg.sender, pool.borrowToken, refundAmount);</span> // 触发退款事件
+    }
+&nbsp;
+       /**
+     * @dev 借款人接收 sp_token 和贷款资金
+     * @notice 池状态不等于匹配和未完成
+     * @param _pid 是池状态
+     */
+<span class="fstat-no" title="function not covered" >    function claimBorrow(uint256 _pid) external nonReentrant notPause timeAfter(_pid) stateNotMatchUndone(_pid)  {</span>
+        // 池基本信息
+<span class="cstat-no" title="statement not covered" >        PoolBaseInfo storage pool = poolBaseInfo[_pid];</span>
+<span class="cstat-no" title="statement not covered" >        PoolDataInfo storage data = poolDataInfo[_pid];</span>
+<span class="cstat-no" title="statement not covered" >        BorrowInfo storage borrowInfo = userBorrowInfo[msg.sender][_pid];</span>
+        // 限制
+<span class="cstat-no" title="statement not covered" >        require(borrowInfo.stakeAmount &gt; 0, "claimBorrow: 没有索取 jp_token")</span>;
+<span class="cstat-no" title="statement not covered" >        require(!borrowInfo.hasNoClaim,"claimBorrow: 再次索取")</span>;
+        // 总 jp 数量 = settleAmountLend * martgageRate
+<span class="cstat-no" title="statement not covered" >        uint256 totalJpAmount = data.settleAmountLend.mul(pool.martgageRate).div(baseDecimal);</span>
+<span class="cstat-no" title="statement not covered" >        uint256 userShare = borrowInfo.stakeAmount.mul(calDecimal).div(pool.borrowSupply);</span>
+<span class="cstat-no" title="statement not covered" >        uint256 jpAmount = totalJpAmount.mul(userShare).div(calDecimal);</span>
+        // 铸造 jp token
+<span class="cstat-no" title="statement not covered" >        pool.jpCoin.mint(msg.sender, jpAmount)</span>;
+        // 索取贷款资金
+<span class="cstat-no" title="statement not covered" >        uint256 borrowAmount = data.settleAmountLend.mul(userShare).div(calDecimal);</span>
+<span class="cstat-no" title="statement not covered" >        _redeem(msg.sender,pool.lendToken,borrowAmount)</span>;
+        // 更新用户信息
+        borrowInfo.hasNoClaim = true;
+<span class="cstat-no" title="statement not covered" >        emit ClaimBorrow(msg.sender, pool.borrowToken, jpAmount);</span>
+    }
+&nbsp;
+       /**
+     * @dev 借款人提取剩余的保证金，这个函数首先检查提取的金额是否大于0，然后销毁相应数量的JPtoken。接着，它计算JPtoken的份额，并根据池的状态（完成或清算）进行相应的操作。如果池的状态是完成，它会检查当前时间是否大于结束时间，然后计算赎回金额并进行赎回。如果池的状态是清算，它会检查当前时间是否大于匹配时间，然后计算赎回金额并进行赎回。
+     * @param _pid 是池状态
+     * @param _jpAmount 是用户销毁JPtoken的数量
+     */
+<span class="fstat-no" title="function not covered" >    function withdrawBorrow(uint256 _pid, uint256 _jpAmount ) external nonReentrant notPause stateFinishLiquidation(_pid) {</span>
+        // 声明池基础信息和数据信息的存储
+<span class="cstat-no" title="statement not covered" >        PoolBaseInfo storage pool = poolBaseInfo[_pid];</span>
+<span class="cstat-no" title="statement not covered" >        PoolDataInfo storage data = poolDataInfo[_pid];</span>
+        // 要求提取的金额大于0
+<span class="cstat-no" title="statement not covered" >        require(_jpAmount &gt; 0, 'withdrawBorrow: withdraw amount is zero')</span>;
+        // 销毁jp token
+<span class="cstat-no" title="statement not covered" >        pool.jpCoin.burn(msg.sender,_jpAmount)</span>;
+        // jp份额
+<span class="cstat-no" title="statement not covered" >        uint256 totalJpAmount = data.settleAmountLend.mul(pool.martgageRate).div(baseDecimal);</span>
+<span class="cstat-no" title="statement not covered" >        uint256 jpShare = _jpAmount.mul(calDecimal).div(totalJpAmount);</span>
+        // 完成状态
+<span class="cstat-no" title="statement not covered" >        if (pool.state == PoolState.FINISH) {</span>
+            // 要求当前时间大于结束时间
+<span class="cstat-no" title="statement not covered" >            require(block.timestamp &gt; pool.endTime, "withdrawBorrow: less than end time")</span>;
+<span class="cstat-no" title="statement not covered" >            uint256 redeemAmount = jpShare.mul(data.finishAmountBorrow).div(calDecimal);</span>
+<span class="cstat-no" title="statement not covered" >            _redeem(msg.sender,pool.borrowToken,redeemAmount)</span>;
+<span class="cstat-no" title="statement not covered" >            emit WithdrawBorrow(msg.sender, pool.borrowToken, _jpAmount, redeemAmount);</span>
+        }
+        // 清算状态
+<span class="cstat-no" title="statement not covered" >        if (pool.state == PoolState.LIQUIDATION){</span>
+            // 要求当前时间大于匹配时间
+<span class="cstat-no" title="statement not covered" >            require(block.timestamp &gt; pool.settleTime, "withdrawBorrow: less than match time")</span>;
+<span class="cstat-no" title="statement not covered" >            uint256 redeemAmount = jpShare.mul(data.liquidationAmounBorrow).div(calDecimal);</span>
+<span class="cstat-no" title="statement not covered" >            _redeem(msg.sender,pool.borrowToken,redeemAmount)</span>;
+<span class="cstat-no" title="statement not covered" >            emit WithdrawBorrow(msg.sender, pool.borrowToken, _jpAmount, redeemAmount);</span>
+        }
+    }
+       /**
+     * @dev 紧急借款提取
+     * @notice 在极端情况下，总存款为0，或者总保证金为0，在某些极端情况下，如总存款为0或总保证金为0时，借款者可以进行紧急提取。首先，代码会获取池子的基本信息和借款者的借款信息，然后检查借款供应和借款者的质押金额是否大于0，以及借款者是否已经进行过退款。如果这些条件都满足，那么就会执行赎回操作，并标记借款者已经退款。最后，触发一个紧急借款提取的事件。
+     * @param _pid 是池子的索引
+     */
+<span class="fstat-no" title="function not covered" >    function emergencyBorrowWithdrawal(uint256 _pid) external nonReentrant notPause stateUndone(_pid) {</span>
+        // 获取池子的基本信息
+<span class="cstat-no" title="statement not covered" >        PoolBaseInfo storage pool = poolBaseInfo[_pid];</span>
+        // 确保借款供应大于0
+<span class="cstat-no" title="statement not covered" >        require(pool.borrowSupply &gt; 0,"emergencyBorrow: not withdrawal")</span>;
+        // 获取借款者的借款信息
+<span class="cstat-no" title="statement not covered" >        BorrowInfo storage borrowInfo = userBorrowInfo[msg.sender][_pid];</span>
+        // 确保借款者的质押金额大于0
+<span class="cstat-no" title="statement not covered" >        require(borrowInfo.stakeAmount &gt; 0, "refundBorrow: not pledged")</span>;
+        // 确保借款者没有进行过退款
+<span class="cstat-no" title="statement not covered" >        require(!borrowInfo.hasNoRefund, "refundBorrow: again refund")</span>;
+        // 执行赎回操作
+<span class="cstat-no" title="statement not covered" >        _redeem(msg.sender,pool.borrowToken,borrowInfo.stakeAmount)</span>;
+        // 标记借款者已经退款
+        borrowInfo.hasNoRefund = true;
+        // 触发紧急借款提取事件
+<span class="cstat-no" title="statement not covered" >        emit EmergencyBorrowWithdrawal(msg.sender, pool.borrowToken, borrowInfo.stakeAmount);</span>
+    }
+&nbsp;
+    /**
+     * @dev 检查是否可以进行结算操作
+     * @param _pid 是池子的索引
+     */
+<span class="fstat-no" title="function not covered" >    function checkoutSettle(uint256 _pid) public view returns(bool){</span>
+        // 检查当前时间是否超过池子的结算时间，若超过则返回true，表示可以结算
+<span class="cstat-no" title="statement not covered" >        return block.timestamp &gt; poolBaseInfo[_pid].settleTime;</span>
+    }
+&nbsp;
+       /**
+     * @dev  结算
+     * @param _pid 是池子的索引
+     */
+    function settle(uint256 _pid) public <span class="missing-if-branch" title="else path not taken" >E</span>validCall {
+        // 获取基础池信息
+        PoolBaseInfo storage pool = poolBaseInfo[_pid];
+        // 获取数据池信息
+        PoolDataInfo storage data = poolDataInfo[_pid];
+        // 需要当前时间大于池子的结算时间
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(block.timestamp &gt; poolBaseInfo[_pid].settleTime, "settle: 小于结算时间");
+        // 池子的状态必须是匹配状态
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(pool.state == PoolState.MATCH, "settle: 池子状态必须是匹配");
+        <span class="missing-if-branch" title="if path not taken" >I</span>if (pool.lendSupply &gt; 0 &amp;&amp; pool.borrowSupply &gt; 0) {
+            // 获取标的物价格，返回 [lendTokenPrice,borrowTokenPrice]
+<span class="cstat-no" title="statement not covered" >            uint256[2]memory prices = getUnderlyingPriceView(_pid);</span>
+            // 总保证金价值 = 保证金数量 * 保证金价格
+            // 计算借款总价值，将借款数量转换为借出代币的价值
+            // prices[0] 为借出代币的价格（USD/借出代币），prices[1] 为借款代币的价格（USD/借款代币）
+            // prices[1].mul(calDecimal).div(prices[0]) 计算出借款代币相对于借出代币的兑换比率
+            // pool.borrowSupply 为当前池中的借款总量
+            // 先将借款总量乘以兑换比率，再除以 calDecimal（用于消除之前计算时乘以的精度）
+            // 最终得到以借出代币计价的借款总价值
+<span class="cstat-no" title="statement not covered" >            uint256 totalValue = pool.borrowSupply.mul(prices[1].mul(calDecimal).div(prices[0])).div(calDecimal);</span>
+            // 转换为稳定币价值
+            // 计算实际可匹配的金额。totalValue 表示某个总价值，baseDecimal 是基于手续费和利息的精度（值为 1e8），
+            // pool.martgageRate 是池的抵押率（单位是 1e8）。此计算通过将总价值乘以精度后再除以抵押率，
+            // 得出在当前抵押率下实际可匹配的金额，用于后续判断借贷池的匹配情况。
+<span class="cstat-no" title="statement not covered" >            uint256 actualValue = totalValue.mul(baseDecimal).div(pool.martgageRate);</span>
+<span class="cstat-no" title="statement not covered" >            if (pool.lendSupply &gt; actualValue){</span>
+                // 总借款大于总借出
+                data.settleAmountLend = actualValue;
+                data.settleAmountBorrow = pool.borrowSupply;
+            } else {
+                // 总借款小于总借出
+                data.settleAmountLend = pool.lendSupply;
+                // 计算结算时的实际借款金额。具体计算逻辑如下： actualValue的逆运算
+                data.settleAmountBorrow = pool.lendSupply.mul(pool.martgageRate).div(prices[1].mul(baseDecimal).div(prices[0]));
+                // data.settleAmountBorrow = pool.lendSupply.mul(pool.martgageRate).div(baseDecimal).div(prices[1].div(prices[0]));
+                // 以上两行计算结果一致，第二个为化简后的计算式，逻辑更清晰。
+                // 推导过程：
+                // 原式1: pool.lendSupply * pool.martgageRate / (prices[1] * baseDecimal / prices[0])
+                // 原式2: pool.lendSupply * pool.martgageRate / baseDecimal / (prices[1] / prices[0])
+                // 根据除法运算规则，两者计算结果一致，选择第二个式子，逻辑更清晰
+            }
+            // 更新池子状态
+            pool.state = PoolState.EXECUTION;
+            // 触发事件
+<span class="cstat-no" title="statement not covered" >            emit StateChange(_pid,uint256(PoolState.MATCH), uint256(PoolState.EXECUTION));</span>
+        } else {
+            // 极端情况，借款或借出任一为0
+            pool.state = PoolState.UNDONE;
+            data.settleAmountLend = pool.lendSupply;
+            data.settleAmountBorrow = pool.borrowSupply;
+            // 触发事件
+            emit StateChange(_pid,uint256(PoolState.MATCH), uint256(PoolState.UNDONE));
+        }
+    }
+&nbsp;
+    /**
+     * @dev 检查借贷池是否可以进入完成状态
+     * @param _pid 是池子的索引
+     */
+<span class="fstat-no" title="function not covered" >    function checkoutFinish(uint256 _pid) public view returns(bool){</span>
+        // 检查当前时间是否超过池子的结束时间，若超过则返回true，表示可以完成
+<span class="cstat-no" title="statement not covered" >        return block.timestamp &gt; poolBaseInfo[_pid].endTime;</span>
+    }
+&nbsp;
+       /**
+     * @dev 完成一个借贷池的操作，包括计算利息、执行交换操作、赎回费用和更新池子状态等步骤。
+     * @param _pid 是池子的索引
+     */
+<span class="fstat-no" title="function not covered" >    function finish(uint256 _pid) public validCall {</span>
+        // 获取基础池子信息和数据信息
+<span class="cstat-no" title="statement not covered" >        PoolBaseInfo storage pool = poolBaseInfo[_pid];</span>
+<span class="cstat-no" title="statement not covered" >        PoolDataInfo storage data = poolDataInfo[_pid];</span>
+&nbsp;
+        // 验证当前时间是否大于池子的结束时间
+<span class="cstat-no" title="statement not covered" >        require(block.timestamp &gt; poolBaseInfo[_pid].endTime, "finish: less than end time")</span>;
+        // 验证池子的状态是否为执行状态
+<span class="cstat-no" title="statement not covered" >        require(pool.state == PoolState.EXECUTION,"finish: pool state must be execution")</span>;
+&nbsp;
+        // 获取借款和贷款的token
+<span class="cstat-no" title="statement not covered" >        (address token0, address token1) = (pool.borrowToken, pool.lendToken);</span>
+&nbsp;
+        // 计算时间比率，结束时间 - 结算时间的结果为开始计息的时间，计算公式为 ((结束时间 - 结算时间) * 基础小数)/365天
+<span class="cstat-no" title="statement not covered" >        uint256 timeRatio = ((pool.endTime.sub(pool.settleTime)).mul(baseDecimal)).div(baseYear);</span>
+&nbsp;
+        // 计算利息 = 时间比率 * 利率 * 结算贷款金额
+        // 计算利息，公式为：利息 = 时间比率 * 利率 * 结算贷款金额 / 1e16
+        // 其中，timeRatio 是时间比率，代表借款时间占一年的比例，乘以 baseDecimal(1e8) 进行精度调整
+        // pool.interestRate 是池的固定利率，单位是 1e8
+        // data.settleAmountLend 是结算时的实际出借金额
+        // 除以 1e16 是为了抵消前面乘法中因精度调整带来的放大效果（baseDecimal的1e8+利率单位1e8），保证最终结果的准确性
+<span class="cstat-no" title="statement not covered" >        uint256 interest = timeRatio.mul(pool.interestRate.mul(data.settleAmountLend)).div(1e16);</span>
+&nbsp;
+        // 计算贷款金额 = 结算贷款金额 + 利息
+<span class="cstat-no" title="statement not covered" >        uint256 lendAmount = data.settleAmountLend.add(interest);</span>
+&nbsp;
+        // 计算销售金额 = 贷款金额*(1+贷款费)，即swap交换时指定的预估卖出输出金额
+<span class="cstat-no" title="statement not covered" >        uint256 sellAmount = lendAmount.mul(lendFee.add(baseDecimal)).div(baseDecimal);</span>
+&nbsp;
+        // 执行交换操作，返回的是实际交换的输入(卖出)金额和实际输出(交换得到)金额
+<span class="cstat-no" title="statement not covered" >        (uint256 amountSell,uint256 amountIn) = _sellExactAmount(swapRouter,token0,token1,sellAmount);</span>
+&nbsp;
+        // 验证交换后的金额是否大于等于贷款金额
+        // 检查交换后获得的金额是否大于等于贷款金额（包含本金+利息和贷款费用）。
+        // 如果 amountIn 小于 lendAmount，说明滑点过高，交换损失过大，交易将被拒绝。
+        // 这是为了保护合约和用户的利益，防止因滑点导致的资金损失。
+<span class="cstat-no" title="statement not covered" >        require(amountIn &gt;= lendAmount, "finish: Slippage is too high")</span>;
+&nbsp;
+        // 如果交换后的金额大于贷款金额，计算费用并赎回
+<span class="cstat-no" title="statement not covered" >        if (amountIn &gt; lendAmount) {</span>
+<span class="cstat-no" title="statement not covered" >            uint256 feeAmount = amountIn.sub(lendAmount) ;</span>
+            // 贷款费
+<span class="cstat-no" title="statement not covered" >            _redeem(feeAddress,pool.lendToken, feeAmount)</span>;
+            data.finishAmountLend = amountIn.sub(feeAmount);
+        }else {
+            data.finishAmountLend = amountIn;
+        }
+&nbsp;
+        // 计算剩余的借款金额并赎回借款费
+<span class="cstat-no" title="statement not covered" >        uint256 remianNowAmount = data.settleAmountBorrow.sub(amountSell);</span>
+        // 剩余借款金额剔除借款手续费，将手续费转移至指定接受手续费的合约地址
+<span class="cstat-no" title="statement not covered" >        uint256 remianBorrowAmount = redeemFees(borrowFee,pool.borrowToken,remianNowAmount);</span>
+        data.finishAmountBorrow = remianBorrowAmount;
+&nbsp;
+        // 更新池子状态为完成
+        pool.state = PoolState.FINISH;
+&nbsp;
+        // 触发状态改变事件
+<span class="cstat-no" title="statement not covered" >        emit StateChange(_pid,uint256(PoolState.EXECUTION), uint256(PoolState.FINISH));</span>
+    }
+&nbsp;
+&nbsp;
+      /**
+     * @dev 检查清算条件,它首先获取了池子的基础信息和数据信息，然后计算了抵押金的当前价值和清算阈值，最后比较了这两个值，如果保证金的当前价值小于清算阈值，那么就满足清算条件，函数返回true，否则返回false。
+     * @param _pid 是池子的索引
+     */
+<span class="fstat-no" title="function not covered" >    function checkoutLiquidate(uint256 _pid) external view returns(bool) {</span>
+<span class="cstat-no" title="statement not covered" >        PoolBaseInfo storage pool = poolBaseInfo[_pid];</span> // 获取基础池信息
+<span class="cstat-no" title="statement not covered" >        PoolDataInfo storage data = poolDataInfo[_pid];</span> // 获取池数据信息
+        // 保证金价格
+<span class="cstat-no" title="statement not covered" >        uint256[2]memory prices = getUnderlyingPriceView(_pid);</span> // 获取标的价格视图
+        // 保证金当前价值 = 保证金数量 * 保证金价格
+<span class="cstat-no" title="statement not covered" >        uint256 borrowValueNow = data.settleAmountBorrow.mul(prices[1].mul(calDecimal).div(prices[0])).div(calDecimal);</span>
+        // 清算阈值 = settleAmountLend*(1+autoLiquidateThreshold)
+        // 计算清算价值阈值。首先将基础精度值（baseDecimal）与自动清算阈值（pool.autoLiquidateThreshold）相加，
+        // 得到一个包含清算阈值比例的系数。然后将该系数与结算时的实际出借金额（data.settleAmountLend）相乘，
+        // 最后除以基础精度值（baseDecimal），以还原数值精度，得到最终的清算价值阈值。
+<span class="cstat-no" title="statement not covered" >        uint256 valueThreshold = data.settleAmountLend.mul(baseDecimal.add(pool.autoLiquidateThreshold)).div(baseDecimal);</span>
+<span class="cstat-no" title="statement not covered" >        return borrowValueNow &lt; valueThreshold;</span> // 如果保证金当前价值小于清算阈值，则返回true，否则返回false
+    }
+&nbsp;
+        /**
+     * @dev 清算
+     * @param _pid 是池子的索引
+     */
+<span class="fstat-no" title="function not covered" >    function liquidate(uint256 _pid) public validCall {</span>
+<span class="cstat-no" title="statement not covered" >        PoolDataInfo storage data = poolDataInfo[_pid];</span> // 获取池子的数据信息
+<span class="cstat-no" title="statement not covered" >        PoolBaseInfo storage pool = poolBaseInfo[_pid];</span> // 获取池子的基本信息
+<span class="cstat-no" title="statement not covered" >        require(block.timestamp &gt; pool.settleTime, "现在的时间小于匹配时间")</span>; // 需要当前时间大于结算时间
+<span class="cstat-no" title="statement not covered" >        require(pool.state == PoolState.EXECUTION,"liquidate: 池子的状态必须是执行状态")</span>; // 需要池子的状态是执行状态
+        // sellamount
+<span class="cstat-no" title="statement not covered" >        (address token0, address token1) = (pool.borrowToken, pool.lendToken);</span> // 获取借款和贷款的token
+        // 时间比率 = ((结束时间 - 结算时间) * 基础小数)/365天
+<span class="cstat-no" title="statement not covered" >        uint256 timeRatio = ((pool.endTime.sub(pool.settleTime)).mul(baseDecimal)).div(baseYear);</span>
+        // 利息 = 时间比率 * 利率 * 结算贷款金额
+<span class="cstat-no" title="statement not covered" >        uint256 interest = timeRatio.mul(pool.interestRate.mul(data.settleAmountLend)).div(1e16);</span>
+        // 贷款金额 = 结算贷款金额 + 利息
+<span class="cstat-no" title="statement not covered" >        uint256 lendAmount = data.settleAmountLend.add(interest);</span>
+        // sellamount = lendAmount*(1+lendFee)
+        // 添加贷款费用
+<span class="cstat-no" title="statement not covered" >        uint256 sellAmount = lendAmount.mul(lendFee.add(baseDecimal)).div(baseDecimal);</span>
+<span class="cstat-no" title="statement not covered" >        (uint256 amountSell,uint256 amountIn) = _sellExactAmount(swapRouter,token0,token1,sellAmount);</span> // 卖出准确的金额
+        // 可能会有滑点，amountIn - lendAmount &lt; 0;
+<span class="cstat-no" title="statement not covered" >        if (amountIn &gt; lendAmount) {</span>
+<span class="cstat-no" title="statement not covered" >            uint256 feeAmount = amountIn.sub(lendAmount) ;</span> // 费用金额
+            // 贷款费用
+<span class="cstat-no" title="statement not covered" >            _redeem(feeAddress,pool.lendToken, feeAmount)</span>;
+            data.liquidationAmounLend = amountIn.sub(feeAmount);
+        }else {
+            data.liquidationAmounLend = amountIn;
+        }
+        // liquidationAmounBorrow  借款费用
+<span class="cstat-no" title="statement not covered" >        uint256 remianNowAmount = data.settleAmountBorrow.sub(amountSell);</span> // 剩余的现在的金额
+<span class="cstat-no" title="statement not covered" >        uint256 remianBorrowAmount = redeemFees(borrowFee,pool.borrowToken,remianNowAmount);</span> // 剩余的借款金额
+        data.liquidationAmounBorrow = remianBorrowAmount;
+        // 更新池子状态
+        pool.state = PoolState.LIQUIDATION;
+         // 事件
+<span class="cstat-no" title="statement not covered" >        emit StateChange(_pid,uint256(PoolState.EXECUTION), uint256(PoolState.LIQUIDATION));</span>
+    }
+&nbsp;
+&nbsp;
+      /**
+     * @dev 费用计算,计算并赎回费用。首先，它计算费用，这是通过乘以费率并除以基数来完成的。如果计算出的费用大于0，它将从费用地址赎回相应的费用。最后，它返回的是原始金额减去费用。
+     */
+<span class="fstat-no" title="function not covered" >    function redeemFees(uint256 feeRatio,address token,uint256 amount) internal returns (uint256){</span>
+        // 计算费用，费用 = 金额 * 费率 / 基数
+<span class="cstat-no" title="statement not covered" >        uint256 fee = amount.mul(feeRatio)/baseDecimal;</span>
+        // 如果费用大于0
+<span class="cstat-no" title="statement not covered" >        if (fee&gt;0){</span>
+            // 从费用地址赎回相应的费用
+<span class="cstat-no" title="statement not covered" >            _redeem(feeAddress,token, fee)</span>;
+        }
+        // 返回金额减去费用
+<span class="cstat-no" title="statement not covered" >        return amount.sub(fee);</span>
+    }
+&nbsp;
+&nbsp;
+&nbsp;
+    /**
+     * @dev Get the swap path
+     */
+<span class="fstat-no" title="function not covered" >    function _getSwapPath(address _swapRouter,address token0,address token1) internal pure returns (address[] memory path){</span>
+<span class="cstat-no" title="statement not covered" >        IUniswapV2Router02 IUniswap = IUniswapV2Router02(_swapRouter);</span>
+        path = new address[](2);
+        path[0] = token0 == address(0) ? IUniswap.WETH() : token0;
+        path[1] = token1 == address(0) ? IUniswap.WETH() : token1;
+    }
+&nbsp;
+     /**
+      * @dev Get input based on output
+      */
+<span class="fstat-no" title="function not covered" >    function _getAmountIn(address _swapRouter,address token0,address token1,uint256 amountOut) internal view returns (uint256){</span>
+<span class="cstat-no" title="statement not covered" >        IUniswapV2Router02 IUniswap = IUniswapV2Router02(_swapRouter);</span>
+<span class="cstat-no" title="statement not covered" >        address[] memory path = _getSwapPath(swapRouter,token0,token1);</span>
+        // 根据指定输出金额获取输入金额
+<span class="cstat-no" title="statement not covered" >        uint[] memory amounts = IUniswap.getAmountsIn(amountOut, path);</span>
+<span class="cstat-no" title="statement not covered" >        return amounts[0];</span>
+    }
+&nbsp;
+     /**
+      * @dev sell Exact Amount
+      */
+<span class="fstat-no" title="function not covered" >    function _sellExactAmount(address _swapRouter,address token0,address token1,uint256 amountout) internal returns (uint256,uint256){</span>
+<span class="cstat-no" title="statement not covered" >        uint256 amountSell = amountout &gt; 0 ? _getAmountIn(swapRouter,token0,token1,amountout) : 0;</span>
+<span class="cstat-no" title="statement not covered" >        return (amountSell,_swap(_swapRouter,token0,token1,amountSell));</span>
+    }
+&nbsp;
+    /**
+      * @dev 执行代币交换操作
+      * @param _swapRouter 交换路由器地址，例如PancakeSwap或BabySwap等
+      * @param token0 用于交换的输入代币地址，若为 address(0) 则表示原生代币ETH
+      * @param token1 交换后要获取的输出代币地址，若为 address(0) 则表示原生代币ETH
+      * @param amount0 输入代币的数量
+      * @return uint256 交换后获得的输出代币数量
+      */
+<span class="fstat-no" title="function not covered" >    function _swap(address _swapRouter,address token0,address token1,uint256 amount0) internal returns (uint256) {</span>
+        // 若输入代币不是ETH，则对交换路由器进行最大额度授权
+<span class="cstat-no" title="statement not covered" >        if (token0 != address(0)){</span>
+<span class="cstat-no" title="statement not covered" >            _safeApprove(token0, address(_swapRouter), uint256(-1))</span>;
+        }
+        // 若输出代币不是ETH，则对交换路由器进行最大额度授权
+<span class="cstat-no" title="statement not covered" >        if (token1 != address(0)){</span>
+<span class="cstat-no" title="statement not covered" >            _safeApprove(token1, address(_swapRouter), uint256(-1))</span>;
+        }
+        // 将交换路由器地址转换为IUniswapV2Router02接口类型
+<span class="cstat-no" title="statement not covered" >        IUniswapV2Router02 IUniswap = IUniswapV2Router02(_swapRouter);</span>
+        // 获取代币交换路径
+<span class="cstat-no" title="statement not covered" >        address[] memory path = _getSwapPath(_swapRouter,token0,token1);</span>
+<span class="cstat-no" title="statement not covered" >        uint256[] memory amounts;</span>
+        // 若输入代币为ETH，则执行ETH兑换代币的操作
+<span class="cstat-no" title="statement not covered" >        if(token0 == address(0)){</span>
+            amounts = IUniswap.swapExactETHForTokens{value:amount0}(0, path,address(this), now+30);
+        // 若输出代币为ETH，则执行代币兑换ETH的操作
+        }else <span class="cstat-no" title="statement not covered" >if(token1 == address(0)){</span>
+            amounts = IUniswap.swapExactTokensForETH(amount0,0, path, address(this), now+30);
+        // 若输入输出均为代币，则执行代币兑换代币的操作
+        }else{
+            amounts = IUniswap.swapExactTokensForTokens(amount0,0, path, address(this), now+30);
+        }
+        // 触发交换事件，记录交换前后的代币地址和数量
+<span class="cstat-no" title="statement not covered" >        emit Swap(token0,token1,amounts[0],amounts[amounts.length-1]);</span>
+        // 返回交换后获得的输出代币数量
+<span class="cstat-no" title="statement not covered" >        return amounts[amounts.length-1];</span>
+    }
+&nbsp;
+    /**
+     * @dev 安全地对指定代币进行授权操作
+     * @param token 要授权的代币合约地址
+     * @param to 被授权的地址
+     * @param value 授权的数量
+     */
+<span class="fstat-no" title="function not covered" >    function _safeApprove(address token, address to, uint256 value) internal {</span>
+        // 调用代币合约的 approve 方法，0x095ea7b3 是 approve 方法的选择器
+<span class="cstat-no" title="statement not covered" >        (bool success, bytes memory data) = token.call(abi.encodeWithSelector(0x095ea7b3, to, value));</span>
+        // 检查调用是否成功，并且返回数据为空或解码后为 true
+<span class="cstat-no" title="statement not covered" >        require(success &amp;&amp; (data.length == 0 || abi.decode(data, (bool))), "!safeApprove")</span>;
+    }
+&nbsp;
+       /**
+     * @dev 获取最新的预言机价格
+     */
+    function getUnderlyingPriceView(uint256 _pid) public view returns(uint256[2]memory){
+        // 从基础池中获取指定的池
+        PoolBaseInfo storage pool = poolBaseInfo[_pid];
+        // 创建一个新的数组来存储资产
+<span class="cstat-no" title="statement not covered" >        uint256[] memory assets = new uint256[](2);</span>
+        // 将借款和贷款的token添加到资产数组中
+        assets[0] = uint256(pool.lendToken);
+        assets[1] = uint256(pool.borrowToken);
+        // 从预言机获取资产的价格
+<span class="cstat-no" title="statement not covered" >        uint256[]memory prices = oracle.getPrices(assets);</span>
+        // 返回价格数组 [lendTokenPrice,borrowTokenPrice]
+<span class="cstat-no" title="statement not covered" >        return [prices[0],prices[1]];</span>
+    }
+&nbsp;
+    /**
+     * @dev set Pause
+     */
+    function setPause() public <span class="missing-if-branch" title="else path not taken" >E</span>validCall {
+        globalPaused = !globalPaused;
+    }
+&nbsp;
+    modifier notPause() {
+        require(globalPaused == false, "Stake has been suspended");
+        _;
+    }
+&nbsp;
+&nbsp;
+    modifier timeBefore(uint256 _pid) {
+        require(block.timestamp &lt; poolBaseInfo[_pid].settleTime, "Less than this time");
+        _;
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    modifier timeAfter(uint256 _pid) {</span>
+<span class="cstat-no" title="statement not covered" >        require(block.timestamp &gt; poolBaseInfo[_pid].settleTime, "Greate than this time")</span>;
+        _;
+    }
+&nbsp;
+&nbsp;
+    modifier stateMatch(uint256 _pid) {
+        <span class="missing-if-branch" title="else path not taken" >E</span>require(poolBaseInfo[_pid].state == PoolState.MATCH, "state: Pool status is not equal to match");
+        _;
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    modifier stateNotMatchUndone(uint256 _pid) {</span>
+<span class="cstat-no" title="statement not covered" >        require(poolBaseInfo[_pid].state == PoolState.EXECUTION || poolBaseInfo[_pid].state == PoolState.FINISH || poolBaseInfo[_pid].state == PoolState.LIQUIDATION,"state: not match and undone")</span>;
+        _;
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    modifier stateFinishLiquidation(uint256 _pid) {</span>
+<span class="cstat-no" title="statement not covered" >        require(poolBaseInfo[_pid].state == PoolState.FINISH || poolBaseInfo[_pid].state == PoolState.LIQUIDATION,"state: finish liquidation")</span>;
+        _;
+    }
+&nbsp;
+<span class="fstat-no" title="function not covered" >    modifier stateUndone(uint256 _pid) {</span>
+<span class="cstat-no" title="statement not covered" >        require(poolBaseInfo[_pid].state == PoolState.UNDONE,"state: state must be undone")</span>;
+        _;
+    }
+&nbsp;
+}
+&nbsp;</pre></td></tr>
+</table></pre>
+<div class='push'></div><!-- for sticky footer -->
+</div><!-- /wrapper -->
+<div class='footer quiet pad2 space-top1 center small'>
+  Code coverage
+  generated by <a href="http://istanbul-js.org/" target="_blank">istanbul</a> at Sun Sep 21 2025 17:26:45 GMT+0800 (中国标准时间)
+</div>
+</div>
+<script src="../prettify.js"></script>
+<script>
+window.onload = function () {
+        if (typeof prettyPrint === 'function') {
+            prettyPrint();
+        }
+};
+</script>
+<script src="../sorter.js"></script>
+</body>
+</html>
